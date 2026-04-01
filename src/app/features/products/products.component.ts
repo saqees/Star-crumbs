@@ -85,7 +85,7 @@ import { environment } from '../../../environments/environment';
               <h3 class="product-name">{{p.name}}</h3>
               <p class="product-desc">{{p.description | slice:0:65}}{{(p.description?.length || 0)>65?'...':''}}</p>
               <div class="product-footer">
-                <span class="product-price">${{p.price | number:'1.0-0'}}</span>
+                <span class="product-price">\${{ p.price | number:'1.0-0' }}</span>
                 <div class="product-rating">
                   <i class="fas fa-star" style="color:var(--caramel);font-size:0.8rem"></i>
                   <span style="font-size:0.8rem;color:var(--text-light)">{{p.rating_avg | number:'1.1-1'}} ({{p.rating_count}})</span>
