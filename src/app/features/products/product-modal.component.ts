@@ -47,7 +47,7 @@ import { environment } from '../../../environments/environment';
               <span class="rating-text">{{product.rating_avg | number:'1.1-1'}} ({{product.rating_count}} reseñas)</span>
             </div>
 
-            <p class="detail-price">${{product.price | number:'1.0-0'}}</p>
+            <p class="detail-price">$ {{product.price | number:'1.0-0'}}</p>
             <p class="detail-desc">{{product.description}}</p>
 
             <div class="detail-stock" [class.low]="product.stock < 10">
