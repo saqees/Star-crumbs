@@ -98,7 +98,7 @@ import { ProductModalComponent } from '../products/product-modal.component';
               <h3 class="product-name">{{p.name}}</h3>
               <p class="product-desc">{{p.description | slice:0:70}}{{p.description && p.description.length>70 ? '...' : ''}}</p>
               <div class="product-footer">
-                <span class="product-price">${{p.price | number:'1.0-0'}}</span>
+                <span class="product-price">$ {{p.price | number:'1.0-0'}}</span>
                 <div class="product-rating">
                   <span class="stars">
                     <i *ngFor="let s of getStars(p.rating_avg)" class="fas fa-star"></i>
