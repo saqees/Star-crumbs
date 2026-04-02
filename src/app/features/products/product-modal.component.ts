@@ -58,9 +58,9 @@ import { environment } from '../../../environments/environment';
             <!-- Quantity + Add -->
             <div class="qty-row" *ngIf="product.stock > 0">
               <div class="qty-ctrl">
-                <button (click)="qty > 1 ? qty-- : null"><i class="fas fa-minus"></i></button>
+                <button (click)="qty > 1 && (qty = qty - 1)"><i class="fas fa-minus"></i></button>
                 <span>{{qty}}</span>
-                <button (click)="qty < product.stock ? qty++ : null"><i class="fas fa-plus"></i></button>
+                <button (click)="qty < product.stock && (qty = qty + 1)"><i class="fas fa-plus"></i></button>
               </div>
               <button class="btn btn-primary" (click)="addToCart()" style="flex:1">
                 <i class="fas fa-bag-shopping"></i> Agregar al carrito
