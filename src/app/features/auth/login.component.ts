@@ -45,7 +45,7 @@ import { ToastService } from '../../core/services/toast.service';
         </p>
 
         <div class="admin-hint">
-          <small>Admin demo: admin@starcrumbs.com / Admin123!</small>
+          <small>Admin demo: admin&#64;starcrumbs.com / Admin123!</small>
         </div>
       </div>
     </div>
