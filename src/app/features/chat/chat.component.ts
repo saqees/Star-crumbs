@@ -1,280 +1,100 @@
-import { Component, OnInit, OnDestroy, Output, EventEmitter, signal, ViewChild, ElementRef, AfterViewChecked } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ChatService } from '../../core/services/chat.service';
+import { RouterLink, Router } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { ToastService } from '../../core/services/toast.service';
-import { ChatMessage } from '../../core/models/models';
 
 @Component({
-  selector: 'app-chat',
+  selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterLink],
   template: `
-    <div class="chat-overlay" (click)="onOverlay($event)">
-      <div class="chat-window">
-        <!-- Header -->
-        <div class="chat-header">
-          <div class="chat-admin-info">
-            <div class="admin-avatar-wrap">
-              <span class="admin-avatar">🍪</span>
-              <span class="online-indicator" [class.online]="adminOnline()"></span>
-            </div>
-            <div>
-              <strong>Star Crumbs</strong>
-              <p class="online-text">{{adminOnline() ? 'En línea' : 'Desconectado'}}</p>
-            </div>
-          </div>
-          <button class="close-chat" (click)="close.emit()"><i class="fas fa-times"></i></button>
+    <div class="auth-page">
+      <div class="auth-card card">
+        <div class="auth-header">
+          <span class="auth-icon">🍪</span>
+          <h2>Bienvenido de vuelta</h2>
+          <p>Inicia sesión en Star Crumbs</p>
         </div>
 
-        <!-- Messages area -->
-        <div class="messages-area" #msgArea>
-          <div *ngIf="allMessages().length === 0" class="chat-welcome">
-            <span>👋</span>
-            <p>¡Hola! ¿En qué podemos ayudarte hoy?</p>
+        <form (ngSubmit)="login()">
+          <div class="form-group">
+            <label>Correo electrónico</label>
+            <input type="email" [(ngModel)]="email" name="email" class="form-control" placeholder="tu@email.com" required>
           </div>
-
-          <div *ngFor="let msg of allMessages()"
-               class="msg-row"
-               [class.msg-mine]="msg.sender_id === myId"
-               [class.msg-theirs]="msg.sender_id !== myId">
-            <img *ngIf="msg.sender_id !== myId"
-                 [src]="adminPic || 'assets/avatar.png'"
-                 class="msg-avatar" alt="admin">
-            <div class="msg-bubble">
-              {{msg.message}}
-              <span class="msg-time">{{formatTime(msg.created_at || msg.timestamp)}}</span>
+          <div class="form-group">
+            <label>Contraseña</label>
+            <div class="pass-wrap">
+              <input [type]="showPass ? 'text' : 'password'" [(ngModel)]="password" name="password"
+                     class="form-control" placeholder="••••••••" required>
+              <button type="button" class="pass-toggle" (click)="showPass=!showPass">
+                <i [class]="showPass ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+              </button>
             </div>
           </div>
 
-          <div *ngIf="isTyping()" class="typing-indicator msg-row msg-theirs">
-            <img [src]="adminPic || 'assets/avatar.png'" class="msg-avatar" alt="admin">
-            <div class="msg-bubble typing">
-              <span></span><span></span><span></span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Input -->
-        <div class="chat-input-area">
-          <textarea
-            [(ngModel)]="messageText"
-            (keydown.enter)="onEnter($event)"
-            placeholder="Escribe un mensaje..."
-            class="chat-input"
-            rows="1">
-          </textarea>
-          <button class="send-btn" (click)="sendMessage()" [disabled]="!messageText.trim()">
-            <i class="fas fa-paper-plane"></i>
+          <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center" [disabled]="loading()">
+            <i class="fas fa-sign-in-alt"></i>
+            {{loading() ? 'Ingresando...' : 'Ingresar'}}
           </button>
+        </form>
+
+        <p class="auth-alt">
+          ¿No tienes cuenta? <a routerLink="/auth/register">Regístrate aquí</a>
+        </p>
+
+        <div class="admin-hint">
+          <small>Admin demo: admin&#64;starcrumbs.com / Admin123!</small>
         </div>
       </div>
     </div>
   `,
   styles: [`
-    .chat-overlay {
-      position: fixed; inset: 0; z-index: 950;
-      background: rgba(0,0,0,0.3);
-    }
-    .chat-window {
-      position: fixed; bottom: 24px; right: 24px;
-      width: 380px; height: 560px;
-      background: #fff; border-radius: var(--radius-xl);
-      box-shadow: var(--shadow-lg); display: flex;
-      flex-direction: column; animation: slideUp 0.35s ease;
-      overflow: hidden;
-    }
-    .chat-header {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 16px 20px;
-      background: linear-gradient(135deg, var(--warm-capuchino), var(--caramel-roast));
-      color: #fff;
-    }
-    .chat-admin-info { display: flex; align-items: center; gap: 12px; }
-    .admin-avatar-wrap { position: relative; }
-    .admin-avatar {
-      width: 44px; height: 44px; border-radius: 50%;
-      background: rgba(255,255,255,0.2); display: flex;
-      align-items: center; justify-content: center; font-size: 1.4rem;
-    }
-    .online-indicator {
-      position: absolute; bottom: 2px; right: 2px;
-      width: 12px; height: 12px; border-radius: 50%;
-      background: #ccc; border: 2px solid #fff;
-    }
-    .online-indicator.online { background: var(--success); }
-    .chat-header strong { font-size: 1rem; display: block; }
-    .online-text { font-size: 0.75rem; opacity: 0.85; margin: 0; }
-    .close-chat { background: rgba(255,255,255,0.2); border: none; cursor: pointer; color: #fff; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: background var(--transition); }
-    .close-chat:hover { background: rgba(255,255,255,0.35); }
-
-    .messages-area {
-      flex: 1; overflow-y: auto; padding: 16px;
-      display: flex; flex-direction: column; gap: 10px;
-      background: #f8f4f0;
-    }
-    .chat-welcome {
-      text-align: center; padding: 40px 20px;
-      display: flex; flex-direction: column; align-items: center; gap: 8px;
-    }
-    .chat-welcome span { font-size: 2.5rem; }
-    .chat-welcome p { color: var(--text-light); font-size: 0.9rem; }
-
-    .msg-row {
-      display: flex; align-items: flex-end; gap: 8px; max-width: 85%;
-    }
-    .msg-mine { align-self: flex-end; flex-direction: row-reverse; }
-    .msg-theirs { align-self: flex-start; }
-    .msg-avatar { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
-    .msg-bubble {
-      padding: 10px 14px; border-radius: 18px;
-      font-size: 0.88rem; line-height: 1.5; position: relative;
-      max-width: 100%; word-break: break-word;
-    }
-    .msg-mine .msg-bubble {
-      background: linear-gradient(135deg, var(--warm-capuchino), var(--caramel-roast));
-      color: #fff; border-bottom-right-radius: 4px;
-    }
-    .msg-theirs .msg-bubble {
-      background: #fff; color: var(--text-dark);
-      border-bottom-left-radius: 4px; box-shadow: var(--shadow-sm);
-    }
-    .msg-time {
-      display: block; font-size: 0.65rem; opacity: 0.6; text-align: right; margin-top: 4px;
-    }
-
-    /* Typing indicator */
-    .typing { display: flex; gap: 5px; align-items: center; padding: 12px 16px; }
-    .typing span {
-      width: 7px; height: 7px; border-radius: 50%;
-      background: var(--warm-capuchino); animation: bounce 1.2s infinite;
-    }
-    .typing span:nth-child(2) { animation-delay: 0.2s; }
-    .typing span:nth-child(3) { animation-delay: 0.4s; }
-
-    .chat-input-area {
-      display: flex; gap: 10px; padding: 14px 16px;
-      border-top: 1px solid var(--almond); background: #fff;
-    }
-    .chat-input {
-      flex: 1; border: 2px solid var(--almond); border-radius: 20px;
-      padding: 10px 16px; font-family: var(--font-body); font-size: 0.9rem;
-      outline: none; resize: none; max-height: 80px;
-      transition: border-color var(--transition);
-    }
-    .chat-input:focus { border-color: var(--warm-capuchino); }
-    .send-btn {
-      width: 44px; height: 44px; border-radius: 50%;
-      background: linear-gradient(135deg, var(--warm-capuchino), var(--caramel-roast));
-      border: none; cursor: pointer; color: #fff; font-size: 1rem;
+    .auth-page {
+      min-height: calc(100vh - 72px);
       display: flex; align-items: center; justify-content: center;
-      transition: all var(--transition); flex-shrink: 0;
+      padding: 40px 16px;
+      background: linear-gradient(135deg, var(--creamy-latte) 0%, var(--almond) 100%);
     }
-    .send-btn:hover:not(:disabled) { transform: scale(1.1); }
-    .send-btn:disabled { opacity: 0.4; cursor: default; }
-
-    @media (max-width: 440px) {
-      .chat-window { width: calc(100vw - 32px); right: 16px; bottom: 16px; height: 480px; }
+    .auth-card { padding: 48px 40px; max-width: 440px; width: 100%; }
+    .auth-header { text-align: center; margin-bottom: 36px; }
+    .auth-icon { font-size: 3rem; display: block; margin-bottom: 12px; }
+    .auth-header h2 { margin-bottom: 6px; }
+    .auth-header p { color: var(--text-light); }
+    .pass-wrap { position: relative; }
+    .pass-wrap .form-control { padding-right: 48px; }
+    .pass-toggle {
+      position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+      background: none; border: none; cursor: pointer; color: var(--text-light); font-size: 1rem;
     }
+    .auth-alt { text-align: center; margin-top: 24px; color: var(--text-light); font-size: 0.9rem; }
+    .auth-alt a { color: var(--warm-capuchino); font-weight: 700; }
+    .admin-hint { text-align: center; margin-top: 16px; padding: 10px; background: var(--almond-light); border-radius: var(--radius-md); }
+    .admin-hint small { color: var(--text-light); font-size: 0.78rem; }
+    @media (max-width: 480px) { .auth-card { padding: 32px 24px; } }
   `]
 })
-export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
-  @Output() close = new EventEmitter<void>();
-  @ViewChild('msgArea') msgArea!: ElementRef;
+export class LoginComponent {
+  email = '';
+  password = '';
+  showPass = false;
+  loading = signal(false);
 
-  messageText = '';
-  allMessages = signal<ChatMessage[]>([]);
-  isTyping = signal(false);
-  adminOnline = signal(false);
-  adminId = '';
-  adminPic = '';
+  constructor(private auth: AuthService, private toast: ToastService, private router: Router) {}
 
-  get myId() { return this.auth.currentUser()?.id || ''; }
-
-  constructor(
-    public auth: AuthService,
-    private chatService: ChatService,
-    private toast: ToastService
-  ) {}
-
-  ngOnInit() {
-    this.chatService.getAdminId().subscribe({
-      next: (admin: any) => {
-        this.adminId = admin.id;
-        this.adminPic = admin.profile_picture || '';
-        this.adminOnline.set(this.chatService.isOnline(admin.id));
-        this.loadHistory();
+  login() {
+    if (!this.email || !this.password) return;
+    this.loading.set(true);
+    this.auth.login(this.email, this.password).subscribe({
+      next: () => {
+        this.toast.success('¡Bienvenido de vuelta! 🍪');
+        this.router.navigate(['/']);
+      },
+      error: (e) => {
+        this.loading.set(false);
+        this.toast.error(e.error?.message || 'Credenciales incorrectas');
       }
     });
-
-    // Listen for new messages
-    const origMessages = this.chatService.messages;
-    setInterval(() => {
-      const msgs = this.chatService.messages();
-      if (msgs.length > 0) {
-        const lastMsg = msgs[msgs.length - 1];
-        const currentLast = this.allMessages();
-        if (!currentLast.some(m => m.created_at === lastMsg.created_at && m.message === lastMsg.message)) {
-          this.allMessages.update(m => [...m, lastMsg]);
-        }
-      }
-    }, 500);
-  }
-
-  ngAfterViewChecked() {
-    this.scrollToBottom();
-  }
-
-  ngOnDestroy() {}
-
-  loadHistory() {
-    this.chatService.loadHistory(this.adminId).subscribe({
-      next: msgs => {
-        this.allMessages.set(msgs);
-        this.scrollToBottom();
-      }
-    });
-  }
-
-  onEnter(e: KeyboardEvent) {
-    if (!e.shiftKey) { e.preventDefault(); this.sendMessage(); }
-  }
-
-  sendMessage() {
-    const text = this.messageText.trim();
-    if (!text || !this.adminId) return;
-
-    const msg: ChatMessage = {
-      sender_id: this.myId,
-      message: text,
-      created_at: new Date().toISOString()
-    };
-    this.allMessages.update(m => [...m, msg]);
-    this.messageText = '';
-
-    this.chatService.sendMessage({
-      receiverId: this.adminId,
-      message: text,
-      senderId: this.myId,
-      senderName: this.auth.currentUser()?.username || '',
-      senderPic: this.auth.currentUser()?.profile_picture || ''
-    });
-  }
-
-  onOverlay(e: MouseEvent) {
-    if ((e.target as HTMLElement).classList.contains('chat-overlay')) this.close.emit();
-  }
-
-  scrollToBottom() {
-    try {
-      const el = this.msgArea?.nativeElement;
-      if (el) el.scrollTop = el.scrollHeight;
-    } catch {}
-  }
-
-  formatTime(val: any): string {
-    if (!val) return '';
-    return new Date(val).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   }
 }
