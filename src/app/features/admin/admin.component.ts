@@ -56,7 +56,7 @@ type Tab = 'products' | 'orders' | 'users' | 'chat' | 'categories';
                   <tr *ngFor="let p of products()">
                     <td><img [src]="p.images[0]||'assets/cookie-placeholder.png'" class="table-img"></td>
                     <td>{{p.name}}</td>
-                    <td>${{p.price | number:'1.0-0'}}</td>
+                    <td>$ {{p.price | number:'1.0-0'}}</td>
                     <td>
                       <span class="stock-badge" [class.low-stock]="p.stock < 5">{{p.stock}}</span>
                     </td>
@@ -87,7 +87,7 @@ type Tab = 'products' | 'orders' | 'users' | 'chat' | 'categories';
                   <tr *ngFor="let o of orders()">
                     <td class="mono">{{o.id | slice:0:8}}...</td>
                     <td>{{o.username || 'Anónimo'}}</td>
-                    <td>${{o.total | number:'1.0-0'}}</td>
+                    <td>$ {{o.total | number:'1.0-0'}}</td>
                     <td>{{o.payment_method}}</td>
                     <td>
                       <select class="status-select" [value]="o.status" (change)="updateOrderStatus(o.id, $any($event.target).value)">
