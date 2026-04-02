@@ -49,7 +49,7 @@ import { ChatMessage } from '../../core/models/models';
         <div class="chat-input-area">
           <textarea
             [(ngModel)]="messageText"
-            (keydown.enter)="onEnter($event as any)"
+            (keydown.enter)="onEnter($event)"
             placeholder="Escribe un mensaje..."
             class="chat-input"
             rows="1">
@@ -196,8 +196,9 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
     });
   }
 
-  onEnter(e: any) {
-    if (!e.shiftKey) { e.preventDefault(); this.sendMessage(); }
+  onEnter(e: Event) {
+    const ke = e as KeyboardEvent;
+    if (!ke.shiftKey) { e.preventDefault(); this.sendMessage(); }
   }
 
   sendMessage() {
