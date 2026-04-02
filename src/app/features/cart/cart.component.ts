@@ -34,7 +34,7 @@ import { environment } from '../../../environments/environment';
               <img [src]="item.images[0] || 'assets/cookie-placeholder.png'" [alt]="item.name" class="item-img">
               <div class="item-info">
                 <h3 class="item-name">{{item.name}}</h3>
-                <p class="item-unit">${{item.price | number:'1.0-0'}} c/u</p>
+                <p class="item-unit">$ {{item.price | number:'1.0-0'}} c/u</p>
               </div>
               <div class="item-qty">
                 <button class="qty-btn" (click)="decreaseQty(item)" [disabled]="item.quantity <= 1">
@@ -45,7 +45,7 @@ import { environment } from '../../../environments/environment';
                   <i class="fas fa-plus"></i>
                 </button>
               </div>
-              <div class="item-subtotal">${{item.price * item.quantity | number:'1.0-0'}}</div>
+              <div class="item-subtotal">$ {{item.price * item.quantity | number:'1.0-0'}}</div>
               <button class="remove-btn" (click)="removeItem(item.id)">
                 <i class="fas fa-trash-alt"></i>
               </button>
@@ -58,12 +58,12 @@ import { environment } from '../../../environments/environment';
             <div class="summary-rows">
               <div *ngFor="let item of cart.items()" class="summary-row">
                 <span>{{item.name}} x{{item.quantity}}</span>
-                <span>${{item.price * item.quantity | number:'1.0-0'}}</span>
+                <span>$ {{item.price * item.quantity | number:'1.0-0'}}</span>
               </div>
               <hr>
               <div class="summary-total">
                 <span>Total</span>
-                <span class="total-val">${{cart.total() | number:'1.0-0'}}</span>
+                <span class="total-val">$ {{cart.total() | number:'1.0-0'}}</span>
               </div>
             </div>
 
