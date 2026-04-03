@@ -216,7 +216,7 @@ export class ProductModalComponent implements OnInit, OnDestroy {
       imgUrl ? `📸 ${imgUrl}` : '',
       `¿Está disponible?`
     ].filter(Boolean).join('\n');
-    return `https://wa.me/573000000000?text=${encodeURIComponent(lines)}`;
+    return `https://wa.me/573215903340?text=${encodeURIComponent(lines)}`;
   }
 
   likeReview(r: any) {
