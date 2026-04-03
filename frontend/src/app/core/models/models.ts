@@ -51,10 +51,20 @@ export interface Order {
   user_id?: string;
   username?: string;
   email?: string;
+  full_name?: string;
+  phone?: string;
+  ambiente_number?: string;
+  schedule?: string;
+  profile_picture?: string;
   total: number;
   status: 'pending' | 'processing' | 'completed' | 'cancelled';
   payment_method?: string;
   notes?: string;
+  items?: any[];
+  archived_by_admin?: boolean;
+  deleted_by_admin?: boolean;
+  archived_by_user?: boolean;
+  deleted_by_user?: boolean;
   created_at: string;
 }
 
