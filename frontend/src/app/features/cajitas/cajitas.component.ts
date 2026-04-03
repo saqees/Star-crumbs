@@ -369,6 +369,6 @@ export class CajitasComponent implements OnInit {
     const msg = encodeURIComponent(
       `Hola! 🎁 Quiero pedir:\n*${combo.name}* (${combo.units} und)\n\n📦 Contenido: ${items}\n💰 Precio: $${price.toLocaleString()}${discount}\n\n¿Está disponible?`
     );
-    return `https://wa.me/573000000000?text=${msg}`;
+    return `https://wa.me/573215903340?text=${msg}`;
   }
 }
