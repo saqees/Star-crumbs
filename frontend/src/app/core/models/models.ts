@@ -76,6 +76,10 @@ export interface Review {
   profile_picture?: string;
   rating: number;
   comment?: string;
+  admin_reply?: string;
+  admin_reply_at?: string;
+  likes?: number;
+  is_visible?: boolean;
   created_at: string;
 }
 
