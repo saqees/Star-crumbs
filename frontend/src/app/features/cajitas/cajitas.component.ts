@@ -115,11 +115,12 @@ import { environment } from '../../../environments/environment';
             </div>
             <div *ngIf="!loadingProd()&&!availProds().length" class="no-prods">
               <span>🍪</span>
-              <p *ngIf="selectedCombo()!.box_type!=='combined'">
-                Esta cajita está reservada para la categoría <strong>{{selectedCombo()!.category_name||'sin asignar'}}</strong>.
-                El admin aún no ha configurado los productos disponibles.
+              <p *ngIf="selectedCombo()!.category_name">
+                No hay productos disponibles en la categoría <strong>{{selectedCombo()!.category_name}}</strong>.
               </p>
-              <p *ngIf="selectedCombo()!.box_type==='combined'">Sin productos disponibles en este momento</p>
+              <p *ngIf="!selectedCombo()!.category_name">
+                Próximamente habrá productos disponibles para esta cajita.
+              </p>
             </div>
           </div>
         </div>
