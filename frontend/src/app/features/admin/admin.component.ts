@@ -1760,10 +1760,7 @@ export class AdminComponent implements OnInit {
     this.http.delete(`${environment.apiUrl}/reviews/${id}`).subscribe({next:()=>{this.toast.success('Eliminada');this.loadProductReviews(this.selectedReviewProduct);}});
   }
 
-  // ── Cajitas / Combos ──
-  openComboForm() { this.editingCombo.set(null); this.comboForm={name:'',description:'',image_url:'',units:4,items:[],original_price:0,discount_amount:0,discount_percent:0,final_price:0,is_active:true,is_featured:false}; this.showComboForm.set(true); }
-  editCombo(c:any) { this.editingCombo.set(c); this.comboForm={...c,items:typeof c.items==='string'?JSON.parse(c.items):[...(c.items||[])]}; this.showComboForm.set(true); }
-  // Old combo item methods removed — new system doesn't use items[]
+  // ── Cajitas / Combos ── (see methods below)
 
   // ── Store Theme ──
   saveStoreTheme() {
