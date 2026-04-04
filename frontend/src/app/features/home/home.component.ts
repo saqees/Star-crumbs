@@ -343,5 +343,5 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.cartService.addToCart(p);
     this.toast.success(p.name + ' agregado 🍪');
   }
-}
   getCookies(n: number) { return Array(Math.min(n, 6)).fill(0); }
+}
