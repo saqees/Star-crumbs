@@ -467,12 +467,13 @@ export class AppComponent implements OnInit, OnDestroy {
         }
       },
       error: () => {
-        this.navLinks.set([
-          { label: 'Inicio', url: '/', exact: true },
-          { label: 'Productos', url: '/products', exact: false },
-          { label: 'Mis Pedidos', url: '/orders', exact: false }
-        ]);
-      }
+  this.navLinks.set([
+    { label: 'Inicio', url: '/', exact: true },
+    { label: 'Productos', url: '/products', exact: false },
+    { label: 'Cajitas', url: '/cajitas', exact: false },
+    { label: 'Mis Pedidos', url: '/orders', exact: false }
+  ]);
+}
     });
     this.http.get<any>(`${environment.apiUrl}/site-settings/footer`).subscribe({
       next: s => { if (s?.setting_value) this.footerConfig.set(s.setting_value); }
