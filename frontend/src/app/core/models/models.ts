@@ -8,6 +8,7 @@ export interface User {
   schedule?: 'diurna' | 'mixta' | 'nocturna';
   profile_picture?: string;
   role: 'user' | 'admin';
+  is_active?: boolean;
   created_at?: string;
 }
 
