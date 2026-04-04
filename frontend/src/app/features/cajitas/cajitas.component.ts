@@ -34,7 +34,7 @@ import { environment } from '../../../environments/environment';
     </div>
 
     <div *ngIf="!loading()" class="box-grid">
-      <div *ngFor="let combo of combos()" class="box-type-card" [class.card-sel]="selectedCombo()?.id===combo.id" (click)="selectCombo(combo)">
+      <div *ngFor="let combo of combos()" class="box-type-card" [class.card-sel]="selectedCombo()?.id===combo.id">
         <!-- CSS animated box -->
         <div class="css-box-area" [class.box-open]="hovered===combo.id" (mouseenter)="hovered=combo.id" (mouseleave)="hovered=''">
           <div class="cbox">
@@ -62,7 +62,7 @@ import { environment } from '../../../environments/environment';
           <div *ngIf="combo.discount_percent>0" class="disc-row">
             <span class="disc-pill">-{{combo.discount_percent}}% OFF</span>
           </div>
-          <button class="btn btn-primary btn-sm armar-btn">
+          <button class="btn btn-primary btn-sm armar-btn" (click)="$event.stopPropagation(); selectCombo(combo)">
             <i class="fas fa-box-open"></i> Armar mi cajita
           </button>
         </div>
@@ -100,8 +100,8 @@ import { environment } from '../../../environments/environment';
           <div *ngIf="loadingProd()" class="pick-loading">
             <div *ngFor="let s of [1,2,3]" class="skeleton" style="height:58px;border-radius:10px;margin-bottom:8px"></div>
           </div>
-          <div class="pick-list">
-            <div *ngFor="let p of availProds()" class="pick-row">
+          <div class="pick-list" *ngIf="!loadingProd()">
+            <div *ngFor="let p of availProds(); trackBy: trackById" class="pick-row">
               <img [src]="p.images?.[0]||'assets/cookie-placeholder.png'" class="pick-img">
               <div class="pick-info">
                 <span class="pick-name">{{p.name}}</span>
@@ -404,15 +404,24 @@ export class CajitasComponent implements OnInit {
   }
 
   selectCombo(combo: any) {
+    // Guard: if already open with same combo, ignore
+    if (this.builderOpen() && this.selectedCombo()?.id === combo.id) return;
     this.selectedCombo.set(combo);
     this.selectedItems.set([]);
+    this.availProds.set([]);
     this.isOpen.set(false);
     this.builderOpen.set(true);
     document.body.style.overflow = 'hidden';
     setTimeout(() => this.isOpen.set(true), 280);
     this.loadingProd.set(true);
     this.http.get<any[]>(`${environment.apiUrl}/combos/${combo.id}/products`).subscribe({
-      next: p => { this.availProds.set(p); this.loadingProd.set(false); },
+      next: p => {
+        // Deduplicate by id just in case
+        const seen = new Set<string>();
+        const unique = p.filter((x: any) => { if (seen.has(x.id)) return false; seen.add(x.id); return true; });
+        this.availProds.set(unique);
+        this.loadingProd.set(false);
+      },
       error: () => this.loadingProd.set(false)
     });
   }
@@ -484,6 +493,7 @@ export class CajitasComponent implements OnInit {
     return `https://wa.me/573215903340?text=${msg}`;
   }
 
+  trackById(_: number, item: any) { return item.id; }
   getDots(n: number) { return Array(Math.min(n, 6)).fill(0); }
   getTypeLabel(t: string) { const m: any = { classic: '🍪 Clásica', special: '⭐ Especial', combined: '🎲 Combinada' }; return m[t] || t; }
 }
