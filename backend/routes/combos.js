@@ -67,15 +67,31 @@ router.get('/:id/products', async (req, res) => {
     const combo = await pool.query('SELECT * FROM combo_boxes WHERE id=$1', [req.params.id]);
     if (!combo.rows.length) return res.status(404).json({ message: 'Not found' });
     const c = combo.rows[0];
-    let q, params;
+    let r;
+
     if (c.category_id) {
-      q = `SELECT id, name, price, images, stock, description FROM products WHERE category_id=$1 AND stock > 0 ORDER BY name`;
-      params = [c.category_id];
+      // Non-combined: only products from the assigned category, DISTINCT to avoid duplicates
+      r = await pool.query(
+        `SELECT DISTINCT ON (p.id) p.id, p.name, p.price, p.images, p.stock, p.description
+         FROM products p
+         WHERE p.category_id = $1 AND p.stock > 0
+         ORDER BY p.id, p.name`,
+        [c.category_id]
+      );
+    } else if (c.box_type === 'combined') {
+      // Combined: all active products, DISTINCT
+      r = await pool.query(
+        `SELECT DISTINCT ON (p.id) p.id, p.name, p.price, p.images, p.stock, p.description
+         FROM products p
+         WHERE p.stock > 0
+         ORDER BY p.id, p.name`
+      );
     } else {
-      q = `SELECT id, name, price, images, stock, description FROM products WHERE stock > 0 ORDER BY name`;
-      params = [];
+      // Classic or special but no category configured yet → return empty
+      // Admin needs to set a category first
+      return res.json([]);
     }
-    const r = await pool.query(q, params);
+
     res.json(r.rows);
   } catch (e) { res.status(500).json({ message: e.message }); }
 });
