@@ -113,7 +113,14 @@ import { environment } from '../../../environments/environment';
                 <button (click)="addItem(p)" [disabled]="totalUnits()>=selectedCombo()!.max_units"><i class="fas fa-plus"></i></button>
               </div>
             </div>
-            <div *ngIf="!loadingProd()&&!availProds().length" class="no-prods"><span>🍪</span><p>Sin productos disponibles</p></div>
+            <div *ngIf="!loadingProd()&&!availProds().length" class="no-prods">
+              <span>🍪</span>
+              <p *ngIf="selectedCombo()!.box_type!=='combined'">
+                Esta cajita está reservada para la categoría <strong>{{selectedCombo()!.category_name||'sin asignar'}}</strong>.
+                El admin aún no ha configurado los productos disponibles.
+              </p>
+              <p *ngIf="selectedCombo()!.box_type==='combined'">Sin productos disponibles en este momento</p>
+            </div>
           </div>
         </div>
 
