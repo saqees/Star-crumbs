@@ -279,6 +279,7 @@ type Tab = 'products'|'categories'|'orders'|'users'|'chat'|'carousel'|'cajitas'|
             <select [(ngModel)]="link.url" class="form-control" style="flex:1.2">
               <option value="/">🏠 Inicio</option>
               <option value="/products">🍪 Productos</option>
+              <option value="/cajitas">🎁 Cajitas</option>
               <option value="/orders">📦 Mis Pedidos</option>
               <option value="/cart">🛍️ Carrito</option>
               <option value="/profile">👤 Perfil</option>
@@ -310,6 +311,7 @@ type Tab = 'products'|'categories'|'orders'|'users'|'chat'|'carousel'|'cajitas'|
             <select [(ngModel)]="link.url" class="form-control" style="flex:1">
               <option value="/">🏠 Inicio</option>
               <option value="/products">🍪 Productos</option>
+              <option value="/cajitas">🎁 Cajitas</option>
               <option value="/orders">📦 Mis Pedidos</option>
               <option *ngFor="let pg of sitePages()" [value]="'/page/'+pg.slug">📄 {{pg.title}}</option>
               <option value="_custom_">✏️ URL personalizada</option>
@@ -662,6 +664,7 @@ type Tab = 'products'|'categories'|'orders'|'users'|'chat'|'carousel'|'cajitas'|
           <label>Destino del botón</label>
           <select [(ngModel)]="slideForm.button_url" class="form-control">
             <option value="/products">🍪 Productos</option>
+            <option value="/cajitas">🎁 Cajitas</option>
             <option value="/">🏠 Inicio</option>
             <option value="/orders">📦 Mis Pedidos</option>
             <option *ngFor="let pg of sitePages()" [value]="'/page/'+pg.slug">📄 {{pg.title}}</option>
@@ -796,6 +799,7 @@ type Tab = 'products'|'categories'|'orders'|'users'|'chat'|'carousel'|'cajitas'|
             <div class="form-group"><label>Destino</label>
               <select [(ngModel)]="sec.button_url" class="form-control">
                 <option value="/products">🍪 Productos</option>
+                <option value="/cajitas">🎁 Cajitas</option>
                 <option value="/">🏠 Inicio</option>
                 <option *ngFor="let pg of sitePages()" [value]="'/page/'+pg.slug">📄 {{pg.title}}</option>
               </select>
