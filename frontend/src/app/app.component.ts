@@ -500,12 +500,7 @@ export class AppComponent implements OnInit, OnDestroy {
           });
         }, 1200);
 
-        // Request browser notification permission after 5s (no install needed)
-        setTimeout(() => {
-          if (Notification.permission === 'default') {
-            this.pushService.requestPermission();
-          }
-        }, 5000);
+
       }
     });
   }
@@ -624,10 +619,53 @@ export class AppComponent implements OnInit, OnDestroy {
     if (this.pushService.isSubscribed()) {
       await this.pushService.unsubscribe();
       this.toastService.info('Notificaciones desactivadas');
-    } else {
-      const ok = await this.pushService.requestPermission();
-      if (ok) this.toastService.success('Notificaciones activadas 🔔');
-      else this.toastService.error('No se pudo activar las notificaciones');
+      return;
+    }
+
+    // ── Direct browser permission request ──────────────────────────────────
+    // Must call Notification.requestPermission() HERE (in the click handler)
+    // Safari and some browsers block it if called through extra async layers
+    if (!('Notification' in window)) {
+      this.toastService.error('Tu navegador no soporta notificaciones');
+      return;
+    }
+
+    if (Notification.permission === 'denied') {
+      this.toastService.error('Las notificaciones están bloqueadas. Ve a Ajustes del sitio en tu navegador y permite notificaciones.');
+      return;
+    }
+
+    if (Notification.permission === 'granted') {
+      this.pushService.isSubscribed.set(true);
+      this.pushService.showNotification('¡Ya tienes notificaciones activadas! 🔔', 'Recibirás alertas de tus pedidos y novedades.');
+      return;
+    }
+
+    // Show the native browser dialog right here (directly in user gesture)
+    try {
+      const result = await Notification.requestPermission();
+      if (result === 'granted') {
+        this.pushService.isSubscribed.set(true);
+        this.pushService.permission.set('granted');
+        this.toastService.success('¡Notificaciones activadas! 🔔');
+        // Show a confirmation notification so user sees it working
+        setTimeout(() => {
+          this.pushService.showNotification(
+            'Star Crumbs 🍪',
+            '¡Listo! Recibirás alertas de pedidos y novedades aquí.',
+            '/'
+          );
+        }, 400);
+        // Also try VAPID push in background (silent fail)
+        this.pushService.tryVapidSubscribePub();
+      } else if (result === 'denied') {
+        this.toastService.error('Bloqueaste las notificaciones. Cambia el permiso en el candado 🔒 de la barra de direcciones.');
+      } else {
+        this.toastService.info('No se concedió permiso de notificaciones.');
+      }
+    } catch (e) {
+      console.warn('Notification permission error:', e);
+      this.toastService.error('Error al solicitar permiso. Intenta desde Chrome o Firefox.');
     }
   }
 
