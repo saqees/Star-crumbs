@@ -92,11 +92,11 @@ export class NotificationService {
   }
 
   markAllRead() {
+    // Mark all read locally immediately, then try the API
+    this.notifications.update(list => list.map(n => ({ ...n, is_read: true })));
+    this.unreadCount.set(0);
     return this.http.post(`${this.api}/notifications/read-all`, {}).pipe(
-      tap(() => {
-        this.notifications.update(list => list.map(n => ({ ...n, is_read: true })));
-        this.unreadCount.set(0);
-      })
+      tap(() => {})
     );
   }
 
