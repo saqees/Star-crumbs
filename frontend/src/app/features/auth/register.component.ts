@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink, Router } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
+import { PushService } from '../../core/services/push.service';
 import { ToastService } from '../../core/services/toast.service';
 
 @Component({
@@ -108,7 +109,7 @@ export class RegisterComponent {
   showPass = false;
   loading = signal(false);
 
-  constructor(private auth: AuthService, private toast: ToastService, private router: Router) {}
+  constructor(private auth: AuthService, private toast: ToastService, private router: Router, private push: PushService) {}
 
   register() {
     if (!this.form.username || !this.form.email || !this.form.password) {
@@ -120,6 +121,12 @@ export class RegisterComponent {
       next: () => {
         this.toast.success('¡Cuenta creada! Bienvenido 🍪');
         this.router.navigate(['/']);
+        // Ask for notification permission right after account creation
+        setTimeout(() => {
+          if ('Notification' in window && Notification.permission === 'default') {
+            this.push.requestPermission();
+          }
+        }, 800);
       },
       error: (e) => {
         this.loading.set(false);
