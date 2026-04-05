@@ -7,7 +7,7 @@ export class PushService {
 
   async requestPermission(): Promise<NotificationPermission> {
     if (!('Notification' in window)) {
-      alert('Este navegador no soporta notificaciones');
+      console.error('Notificaciones no soportadas');
       return 'denied';
     }
 
