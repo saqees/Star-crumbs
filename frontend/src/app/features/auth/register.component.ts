@@ -121,10 +121,18 @@ export class RegisterComponent {
       next: () => {
         this.toast.success('¡Cuenta creada! Bienvenido 🍪');
         this.router.navigate(['/']);
-        // Ask for notification permission right after account creation
+        // Show native browser notification prompt after login
+        // Uses a tiny delay so the user sees the success message first
         setTimeout(() => {
           if ('Notification' in window && Notification.permission === 'default') {
-            this.push.requestPermission();
+            Notification.requestPermission().then(result => {
+              if (result === 'granted') {
+                this.push.isSubscribed.set(true);
+                this.push.permission.set('granted');
+                this.push.showNotification('Star Crumbs 🍪', '¡Notificaciones activadas! Te avisaremos de novedades y pedidos.', '/');
+                this.push.tryVapidSubscribePub();
+              }
+            }).catch(() => {});
           }
         }, 800);
       },
