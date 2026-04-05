@@ -175,18 +175,212 @@ import { PushService } from './core/services/push.service';
             <i class="fas fa-share-alt"></i>
             <span>Compartir</span>
           </button>
-          <button *ngIf="pushService.isSupported" class="footer-action-btn"
-                  (click)="toggleNotifSubscription()"
-                  [title]="pushService.isSubscribed() ? 'Desactivar notificaciones' : (pushService.getBlockedReason() || 'Activar notificaciones')">
-            <i class="fas"
-               [class.fa-bell]="!pushService.isSubscribed() && pushService.permission() !== 'denied'"
-               [class.fa-bell-slash]="pushService.isSubscribed() || pushService.permission() === 'denied'"></i>
-            <span>{{pushService.isSubscribed() ? 'Notif. ON ✓' : 'Notificaciones'}}</span>
+          <button *ngIf="pushService.isSubscribed()" class="footer-action-btn notif-btn active"
+                  (click)="toggleNotifSubscription()" title="Desactivar notificaciones">
+            <i class="fas fa-bell-slash"></i>
+            <span>Notif. ON ✓</span>
+          </button>
+          <button *ngIf="!pushService.isSubscribed()" class="footer-action-btn notif-guide-btn"
+                  (click)="showNotifGuide = true" title="Recibir notificaciones de Star Crumbs">
+            <i class="fas fa-bell"></i>
+            <span>Recibir notificaciones</span>
           </button>
         </div>
         <p class="footer-copy">{{footerConfig()?.copyright || '© 2024 Star Crumbs.'}}</p>
       </div>
     </footer>
+
+    <!-- ═══════════ MODAL GUÍA NOTIFICACIONES ═══════════ -->
+    <div class="notif-guide-overlay" *ngIf="showNotifGuide" (click)="onOverlayClick($event)">
+      <div class="notif-guide-modal">
+
+        <!-- Header con icono de la app -->
+        <div class="ngm-header">
+          <img src="/icons/icon-192x192.png" alt="Star Crumbs" class="ngm-app-icon">
+          <div class="ngm-header-text">
+            <h2>Recibir notificaciones</h2>
+            <p>Entérate de pedidos, ofertas y novedades</p>
+          </div>
+          <button class="ngm-close" (click)="showNotifGuide = false">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+
+        <!-- Tabs de navegador -->
+        <div class="ngm-tabs">
+          <button class="ngm-tab" [class.active]="notifGuideTab === 'chrome'" (click)="notifGuideTab = 'chrome'">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="#4285F4"/><circle cx="12" cy="12" r="4" fill="white"/><path d="M12 8 h10 M6.3 14 L1.3 5.5 M6.3 10 L1.3 18.5" stroke="#EA4335" stroke-width="3"/><path d="M12 8 h10" stroke="#FBBC05" stroke-width="3"/><path d="M6.3 14 L1.3 5.5" stroke="#34A853" stroke-width="3"/></svg>
+            Chrome
+          </button>
+          <button class="ngm-tab" [class.active]="notifGuideTab === 'android'" (click)="notifGuideTab = 'android'">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="#3DDC84"><path d="M17.6 9.5H6.4C5.1 9.5 4 10.6 4 11.9v6.2c0 1.3 1.1 2.4 2.4 2.4h.4v2.8c0 .7.6 1.2 1.2 1.2s1.2-.5 1.2-1.2V20.5h5.6v2.8c0 .7.6 1.2 1.2 1.2s1.2-.5 1.2-1.2V20.5h.4c1.3 0 2.4-1.1 2.4-2.4v-6.2c0-1.3-1.1-2.4-2.4-2.4zM7.3 4.2l-1.4-1.4c-.2-.2-.2-.5 0-.7s.5-.2.7 0l1.5 1.5c.8-.4 1.7-.6 2.6-.6h2.6c1 0 1.9.2 2.7.7l1.5-1.5c.2-.2.5-.2.7 0s.2.5 0 .7l-1.4 1.4c1.3.9 2.2 2.3 2.2 3.9H5.1c0-1.7.9-3.1 2.2-4zm5 2.5c0 .4-.3.7-.7.7s-.7-.3-.7-.7.3-.7.7-.7.7.3.7.7zm4 0c0 .4-.3.7-.7.7s-.7-.3-.7-.7.3-.7.7-.7.7.3.7.7z"/></svg>
+            Android
+          </button>
+          <button class="ngm-tab" [class.active]="notifGuideTab === 'safari'" (click)="notifGuideTab = 'safari'">
+            <svg width="18" height="18" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#006CFF"/><polygon points="12,4 13.5,10.5 20,12 13.5,13.5 12,20 10.5,13.5 4,12 10.5,10.5" fill="white"/><circle cx="12" cy="12" r="1.5" fill="#006CFF"/></svg>
+            Safari iOS
+          </button>
+          <button class="ngm-tab" [class.active]="notifGuideTab === 'firefox'" (click)="notifGuideTab = 'firefox'">
+            <svg width="18" height="18" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#FF6611"/><path d="M12 4c-1.5 0-3 .5-4.2 1.4C9 5.1 10.2 5.5 11 6.5c.8-1 2-1.5 3.2-1.3C13.4 4.4 12.7 4 12 4z" fill="#FFCC00"/><path d="M7.8 5.4C6 6.8 4.8 9 4.8 11.5c0 4 3.2 7.2 7.2 7.2s7.2-3.2 7.2-7.2c0-1-.2-2-.6-2.9-1 .8-2.3 1.2-3.6 1-1.8-.3-3.4-1.8-3.4-3.7 0-.2 0-.4.1-.5-.6-.2-1.2-.4-1.9-.5-.7.4-1.3.9-1.8 1.5h.8z" fill="#FF4500"/></svg>
+            Firefox
+          </button>
+        </div>
+
+        <!-- Contenido por tab -->
+        <div class="ngm-content">
+
+          <!-- CHROME ESCRITORIO -->
+          <div *ngIf="notifGuideTab === 'chrome'" class="ngm-steps">
+            <div class="ngm-intro">
+              <i class="fas fa-desktop"></i>
+              Chrome en computador — actívalo en 2 clicks
+            </div>
+            <div class="ngm-step">
+              <div class="ngm-step-num">1</div>
+              <div class="ngm-step-body">
+                <strong>Haz click en el candado <i class="fas fa-lock"></i></strong> que aparece a la izquierda de la barra de dirección del navegador.
+              </div>
+            </div>
+            <div class="ngm-step">
+              <div class="ngm-step-num">2</div>
+              <div class="ngm-step-body">
+                Busca <strong>"Notificaciones"</strong> en el menú que se abre y cámbialo a <span class="ngm-badge green">Permitir</span>.
+              </div>
+            </div>
+            <div class="ngm-step">
+              <div class="ngm-step-num">3</div>
+              <div class="ngm-step-body">
+                Vuelve aquí y presiona <strong>"Activar"</strong> abajo. ¡Listo!
+              </div>
+            </div>
+            <div class="ngm-tip">
+              <i class="fas fa-lightbulb"></i>
+              También puedes instalar Star Crumbs como app: busca el ícono <i class="fas fa-download"></i> en la barra de Chrome para tenerla siempre a mano.
+            </div>
+          </div>
+
+          <!-- ANDROID -->
+          <div *ngIf="notifGuideTab === 'android'" class="ngm-steps">
+            <div class="ngm-intro">
+              <i class="fab fa-android"></i>
+              Android (Chrome, Samsung, Edge) — directo desde el navegador
+            </div>
+            <div class="ngm-step">
+              <div class="ngm-step-num">1</div>
+              <div class="ngm-step-body">
+                Presiona el botón <strong>"Activar notificaciones"</strong> de abajo.
+              </div>
+            </div>
+            <div class="ngm-step">
+              <div class="ngm-step-num">2</div>
+              <div class="ngm-step-body">
+                Aparecerá una ventana emergente del sistema. Toca <span class="ngm-badge green">Permitir</span>.
+              </div>
+            </div>
+            <div class="ngm-step">
+              <div class="ngm-step-num">3</div>
+              <div class="ngm-step-body">
+                ¡Ya está! Recibirás notificaciones aunque el navegador esté cerrado.
+              </div>
+            </div>
+            <div class="ngm-divider">
+              <span>¿Prefieres instalarla como app?</span>
+            </div>
+            <div class="ngm-step">
+              <div class="ngm-step-num"><i class="fas fa-ellipsis-v"></i></div>
+              <div class="ngm-step-body">
+                Toca los <strong>tres puntos ⋮</strong> del navegador y selecciona <strong>"Agregar a pantalla de inicio"</strong> o <strong>"Instalar app"</strong>.
+              </div>
+            </div>
+          </div>
+
+          <!-- SAFARI iOS -->
+          <div *ngIf="notifGuideTab === 'safari'" class="ngm-steps">
+            <div class="ngm-intro">
+              <i class="fab fa-apple"></i>
+              iPhone / iPad — primero instala la app, luego activa
+            </div>
+            <div class="ngm-alert">
+              <i class="fas fa-info-circle"></i>
+              En iPhone e iPad, Apple requiere instalar Star Crumbs como app antes de poder recibir notificaciones.
+            </div>
+            <div class="ngm-step">
+              <div class="ngm-step-num">1</div>
+              <div class="ngm-step-body">
+                Toca el botón de <strong>Compartir</strong>
+                <span class="ngm-share-icon">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#007AFF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+                </span>
+                que está en la barra inferior de Safari.
+              </div>
+            </div>
+            <div class="ngm-step">
+              <div class="ngm-step-num">2</div>
+              <div class="ngm-step-body">
+                Desliza hacia abajo en el menú y toca <strong>"Agregar a pantalla de inicio"</strong> <i class="fas fa-plus-square" style="color:#007AFF"></i>.
+              </div>
+            </div>
+            <div class="ngm-step">
+              <div class="ngm-step-num">3</div>
+              <div class="ngm-step-body">
+                Confirma tocando <strong>"Agregar"</strong> en la esquina superior derecha. Aparecerá el ícono de Star Crumbs en tu pantalla de inicio.
+              </div>
+            </div>
+            <div class="ngm-step">
+              <div class="ngm-step-num">4</div>
+              <div class="ngm-step-body">
+                <strong>Abre Star Crumbs desde ese ícono</strong>, ve al footer y presiona <strong>"Recibir notificaciones"</strong>.
+              </div>
+            </div>
+            <div class="ngm-tip">
+              <i class="fas fa-lightbulb"></i>
+              Requiere iOS 16.4 o superior. Actualiza tu iPhone si no ves la opción.
+            </div>
+          </div>
+
+          <!-- FIREFOX -->
+          <div *ngIf="notifGuideTab === 'firefox'" class="ngm-steps">
+            <div class="ngm-intro">
+              <i class="fab fa-firefox-browser"></i>
+              Firefox — escritorio y Android
+            </div>
+            <div class="ngm-step">
+              <div class="ngm-step-num">1</div>
+              <div class="ngm-step-body">
+                Presiona el botón <strong>"Activar notificaciones"</strong> de abajo.
+              </div>
+            </div>
+            <div class="ngm-step">
+              <div class="ngm-step-num">2</div>
+              <div class="ngm-step-body">
+                Aparecerá una barra en la parte superior con el mensaje <em>"¿Permitir que Star Crumbs envíe notificaciones?"</em> — toca o haz click en <span class="ngm-badge green">Permitir</span>.
+              </div>
+            </div>
+            <div class="ngm-step">
+              <div class="ngm-step-num">3</div>
+              <div class="ngm-step-body">
+                ¡Listo! Firefox entrega notificaciones en escritorio y en Android sin necesidad de instalar nada.
+              </div>
+            </div>
+            <div class="ngm-tip">
+              <i class="fas fa-lightbulb"></i>
+              Si accidentalmente bloqueaste las notificaciones, ve a <strong>Preferencias → Privacidad → Permisos → Notificaciones</strong> y elimina star-crumbs de la lista de bloqueados.
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Footer del modal -->
+        <div class="ngm-footer">
+          <button class="btn btn-secondary btn-sm" (click)="showNotifGuide = false">Ahora no</button>
+          <button class="btn btn-primary" (click)="activateFromGuide()">
+            <i class="fas fa-bell"></i>
+            Activar notificaciones
+          </button>
+        </div>
+
+      </div>
+    </div>
 
     <!-- Toasts -->
     <div class="toast-stack">
@@ -362,6 +556,121 @@ import { PushService } from './core/services/push.service';
     .social-icon:hover { background:var(--warm-capuchino); color:#fff; transform:translateY(-3px); }
     .footer-copy { grid-column: 1/-1; text-align: center; opacity: 0.4; font-size: 0.77rem; margin-top: 20px; padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.08); }
 
+    /* ─── BOTÓN NOTIF GUIDE ─── */
+    .notif-guide-btn { background: linear-gradient(135deg, var(--warm-capuchino), var(--caramel-roast)); border-color: transparent; color: #fff; }
+    .notif-guide-btn:hover { filter: brightness(1.1); color: #fff; }
+
+    /* ─── MODAL GUÍA NOTIFICACIONES ─── */
+    .notif-guide-overlay {
+      position: fixed; inset: 0; z-index: 10000;
+      background: rgba(0,0,0,0.55); backdrop-filter: blur(4px);
+      display: flex; align-items: center; justify-content: center;
+      padding: 16px; animation: fadeIn 0.2s ease;
+    }
+    @keyframes fadeIn { from { opacity:0 } to { opacity:1 } }
+    .notif-guide-modal {
+      background: var(--cream-white); border-radius: 20px;
+      width: 100%; max-width: 480px; max-height: 90vh;
+      overflow: hidden; display: flex; flex-direction: column;
+      box-shadow: 0 24px 80px rgba(93,58,30,0.28);
+      animation: slideUp 0.25s cubic-bezier(0.4,0,0.2,1);
+    }
+    @keyframes slideUp { from { opacity:0; transform:translateY(24px) } to { opacity:1; transform:translateY(0) } }
+    /* Header */
+    .ngm-header {
+      display: flex; align-items: center; gap: 14px;
+      padding: 20px 20px 16px;
+      background: linear-gradient(135deg, var(--mocca-bean) 0%, #7a4e2d 100%);
+      color: #fff; flex-shrink: 0;
+    }
+    .ngm-app-icon {
+      width: 52px; height: 52px; border-radius: 14px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.3); flex-shrink: 0;
+    }
+    .ngm-header-text { flex: 1; }
+    .ngm-header-text h2 { font-size: 1.1rem; font-weight: 700; margin: 0 0 2px; color: #fff; }
+    .ngm-header-text p { font-size: 0.8rem; opacity: 0.75; margin: 0; color: #fff; }
+    .ngm-close {
+      width: 32px; height: 32px; border-radius: 50%;
+      background: rgba(255,255,255,0.15); border: none; color: #fff;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      font-size: 0.9rem; flex-shrink: 0; transition: background var(--transition);
+    }
+    .ngm-close:hover { background: rgba(255,255,255,0.3); }
+    /* Tabs */
+    .ngm-tabs {
+      display: flex; gap: 2px; padding: 10px 12px 0;
+      background: #fff; border-bottom: 2px solid var(--almond-light);
+      flex-shrink: 0; overflow-x: auto;
+    }
+    .ngm-tab {
+      display: flex; align-items: center; gap: 6px;
+      padding: 8px 14px; border-radius: 8px 8px 0 0;
+      border: none; background: transparent; color: var(--text-mid);
+      cursor: pointer; font-size: 0.82rem; font-weight: 600;
+      white-space: nowrap; transition: all var(--transition);
+      opacity: 0.6;
+    }
+    .ngm-tab:hover { opacity: 0.85; background: var(--almond-light); }
+    .ngm-tab.active { opacity: 1; background: var(--almond-light); color: var(--mocca-bean); border-bottom: 2px solid var(--warm-capuchino); margin-bottom: -2px; }
+    /* Contenido */
+    .ngm-content { flex: 1; overflow-y: auto; padding: 20px; background: #fff; }
+    .ngm-steps { display: flex; flex-direction: column; gap: 12px; }
+    .ngm-intro {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 0.85rem; font-weight: 600; color: var(--mocca-bean);
+      padding: 10px 14px; background: var(--almond-light);
+      border-radius: 10px; border-left: 3px solid var(--warm-capuchino);
+    }
+    .ngm-intro i { color: var(--warm-capuchino); }
+    .ngm-alert {
+      display: flex; align-items: flex-start; gap: 10px;
+      padding: 12px 14px; background: #FFF3CD; border-radius: 10px;
+      font-size: 0.83rem; color: #856404; border-left: 3px solid #FFC107;
+    }
+    .ngm-alert i { margin-top: 2px; color: #FFC107; flex-shrink: 0; }
+    .ngm-step {
+      display: flex; align-items: flex-start; gap: 14px;
+      padding: 12px 14px; background: var(--cream-white);
+      border-radius: 12px; border: 1px solid var(--almond-light);
+    }
+    .ngm-step-num {
+      min-width: 28px; height: 28px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--warm-capuchino), var(--caramel-roast));
+      color: #fff; font-size: 0.8rem; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; margin-top: 1px;
+    }
+    .ngm-step-body { font-size: 0.86rem; color: var(--text-mid); line-height: 1.5; }
+    .ngm-step-body strong { color: var(--mocca-bean); }
+    .ngm-badge {
+      display: inline-block; padding: 1px 10px; border-radius: 20px;
+      font-size: 0.78rem; font-weight: 700;
+    }
+    .ngm-badge.green { background: #D1FAE5; color: #065F46; }
+    .ngm-share-icon { display: inline-flex; vertical-align: middle; margin: 0 3px; }
+    .ngm-tip {
+      display: flex; align-items: flex-start; gap: 8px;
+      padding: 10px 14px; background: #EEF2FF; border-radius: 10px;
+      font-size: 0.8rem; color: #3730A3; border-left: 3px solid #6366F1;
+    }
+    .ngm-tip i { color: #6366F1; flex-shrink: 0; margin-top: 2px; }
+    .ngm-divider {
+      display: flex; align-items: center; gap: 10px;
+      font-size: 0.78rem; color: #9ca3af; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;
+    }
+    .ngm-divider::before, .ngm-divider::after { content: ''; flex: 1; height: 1px; background: var(--almond-light); }
+    /* Footer del modal */
+    .ngm-footer {
+      display: flex; gap: 10px; justify-content: flex-end;
+      padding: 16px 20px; background: var(--cream-white);
+      border-top: 1px solid var(--almond-light); flex-shrink: 0;
+    }
+    @media (max-width: 480px) {
+      .ngm-footer { flex-direction: column-reverse; }
+      .ngm-footer .btn { width: 100%; justify-content: center; }
+    }
+
     /* ─── TOAST ─── */
     .toast-stack { position: fixed; bottom: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
 
@@ -463,6 +772,8 @@ export class AppComponent implements OnInit, OnDestroy {
   userMenuOpen = false;
   showNotifications = false;
   showChat = false;
+  showNotifGuide = false;
+  notifGuideTab: 'chrome' | 'android' | 'safari' | 'firefox' = 'chrome';
   navConfig = signal<any>(null);
 
   footerConfig = signal<any>(null);
@@ -597,6 +908,29 @@ export class AppComponent implements OnInit, OnDestroy {
     } else {
       navigator.clipboard.writeText(window.location.origin)
         .then(() => this.toastService.success('¡Link copiado al portapapeles! 📋'));
+    }
+  }
+
+  onOverlayClick(e: MouseEvent) {
+    if ((e.target as HTMLElement).classList.contains('notif-guide-overlay')) {
+      this.showNotifGuide = false;
+    }
+  }
+
+  async activateFromGuide() {
+    this.showNotifGuide = false;
+    const blocked = this.pushService.getBlockedReason();
+    if (blocked) {
+      this.toastService.info(blocked);
+      return;
+    }
+    const ok = await this.pushService.requestPermissionAndSubscribe();
+    if (ok) {
+      this.toastService.success('¡Notificaciones activadas! 🔔');
+    } else if (this.pushService.permission() === 'denied') {
+      this.toastService.error('Permiso denegado. Habilítalo en la configuración del navegador.');
+    } else {
+      this.toastService.error('No se pudo activar. Intenta de nuevo.');
     }
   }
 
