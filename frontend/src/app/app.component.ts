@@ -610,6 +610,12 @@ export class AppComponent implements OnInit, OnDestroy {
   closeMenu() { this.menuOpen = false; }
   logout() { this.userMenuOpen = false; this.auth.logout(); this.chatService.disconnect(); }
 
+  async requestNotifPermission() {
+    const ok = await this.notifService.requestBrowserPermission();
+    if (ok) this.toastService.success('¡Notificaciones activadas! 🔔');
+    else this.toastService.info('Permiso no concedido');
+  }
+
   shareApp() {
     const shareData = {
       title: 'Star Crumbs 🍪',
