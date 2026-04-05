@@ -140,6 +140,20 @@ import { PushService } from './core/services/push.service';
     <app-chat *ngIf="showChat" (close)="showChat=false"></app-chat>
 
     <app-pwa-prompt></app-pwa-prompt>
+
+    <!-- In-app notification popup — works on ALL browsers without any permission -->
+    <div *ngIf="notifService.inAppNotif()" class="inapp-notif" (click)="goToNotif()">
+      <div class="inapp-inner">
+        <div class="inapp-icon">{{notifService.inAppNotif()!.icon}}</div>
+        <div class="inapp-content">
+          <strong>{{notifService.inAppNotif()!.title}}</strong>
+          <span>{{notifService.inAppNotif()!.body}}</span>
+        </div>
+        <button class="inapp-close" (click)="$event.stopPropagation(); notifService.dismissInApp()">✕</button>
+      </div>
+      <div class="inapp-progress"></div>
+    </div>
+
     <main class="main-content"><router-outlet></router-outlet></main>
 
     <!-- FOOTER -->
@@ -348,6 +362,29 @@ import { PushService } from './core/services/push.service';
     .footer-links { display: flex; flex-direction: column; gap: 9px; }
     .footer-links a { color: var(--almond); opacity: 0.8; font-size: 0.88rem; text-decoration: none; transition: opacity var(--transition); }
     .footer-links a:hover { opacity: 1; }
+    /* ── In-app notification popup ─────────────────────────── */
+    .inapp-notif {
+      position: fixed; top: 80px; right: 16px; z-index: 9999;
+      width: 320px; max-width: calc(100vw - 32px);
+      background: #fff; border-radius: 16px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+      overflow: hidden; cursor: pointer;
+      animation: slideInRight .35s cubic-bezier(.34,1.56,.64,1);
+    }
+    @keyframes slideInRight {
+      from { transform: translateX(calc(100% + 20px)); opacity: 0; }
+      to   { transform: translateX(0); opacity: 1; }
+    }
+    .inapp-inner { display: flex; align-items: center; gap: 12px; padding: 14px 16px; }
+    .inapp-icon { font-size: 1.8rem; flex-shrink: 0; }
+    .inapp-content { flex: 1; min-width: 0; }
+    .inapp-content strong { display: block; font-size: .88rem; color: var(--mocca-bean); margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .inapp-content span { font-size: .78rem; color: var(--text-light); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .inapp-close { background: none; border: none; cursor: pointer; color: #999; font-size: .9rem; padding: 4px; flex-shrink: 0; }
+    .inapp-progress { height: 3px; background: linear-gradient(90deg, var(--warm-capuchino), var(--caramel-roast)); animation: shrink 5s linear forwards; transform-origin: left; }
+    @keyframes shrink { from { transform: scaleX(1); } to { transform: scaleX(0); } }
+    @media (max-width: 400px) { .inapp-notif { right: 8px; left: 8px; width: auto; } }
+    /* ── Footer actions ─────────────────────────────────────── */
     .footer-actions { grid-column:1/-1; display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-top:8px; }
     .footer-action-btn { display:flex; align-items:center; gap:6px; padding:9px 16px; border-radius:var(--radius-full); background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.15); color:var(--almond); cursor:pointer; font-size:0.82rem; font-weight:600; transition:all var(--transition); }
     .footer-action-btn:hover { background:var(--warm-capuchino); border-color:var(--warm-capuchino); color:#fff; }
@@ -618,55 +655,51 @@ export class AppComponent implements OnInit, OnDestroy {
   async toggleNotifSubscription() {
     if (this.pushService.isSubscribed()) {
       await this.pushService.unsubscribe();
+      this.pushService.isSubscribed.set(false);
       this.toastService.info('Notificaciones desactivadas');
       return;
     }
 
-    // ── Direct browser permission request ──────────────────────────────────
-    // Must call Notification.requestPermission() HERE (in the click handler)
-    // Safari and some browsers block it if called through extra async layers
-    if (!('Notification' in window)) {
-      this.toastService.error('Tu navegador no soporta notificaciones');
-      return;
-    }
-
-    if (Notification.permission === 'denied') {
-      this.toastService.error('Las notificaciones están bloqueadas. Ve a Ajustes del sitio en tu navegador y permite notificaciones.');
-      return;
-    }
-
-    if (Notification.permission === 'granted') {
-      this.pushService.isSubscribed.set(true);
-      this.pushService.showNotification('¡Ya tienes notificaciones activadas! 🔔', 'Recibirás alertas de tus pedidos y novedades.');
-      return;
-    }
-
-    // Show the native browser dialog right here (directly in user gesture)
-    try {
-      const result = await Notification.requestPermission();
-      if (result === 'granted') {
+    // Try browser Notification API (desktop/Android Chrome/Firefox)
+    if (typeof window !== 'undefined' && 'Notification' in window) {
+      if (Notification.permission === 'granted') {
         this.pushService.isSubscribed.set(true);
         this.pushService.permission.set('granted');
-        this.toastService.success('¡Notificaciones activadas! 🔔');
-        // Show a confirmation notification so user sees it working
-        setTimeout(() => {
-          this.pushService.showNotification(
-            'Star Crumbs 🍪',
-            '¡Listo! Recibirás alertas de pedidos y novedades aquí.',
-            '/'
-          );
-        }, 400);
-        // Also try VAPID push in background (silent fail)
-        this.pushService.tryVapidSubscribePub();
-      } else if (result === 'denied') {
-        this.toastService.error('Bloqueaste las notificaciones. Cambia el permiso en el candado 🔒 de la barra de direcciones.');
-      } else {
-        this.toastService.info('No se concedió permiso de notificaciones.');
+        this.notifService.showInApp('Notificaciones activas ✅', 'Ya recibes alertas de Star Crumbs 🍪');
+        this.pushService.showNotification('Star Crumbs 🍪', 'Notificaciones activas. Recibirás alertas aquí.', '/');
+        return;
       }
-    } catch (e) {
-      console.warn('Notification permission error:', e);
-      this.toastService.error('Error al solicitar permiso. Intenta desde Chrome o Firefox.');
+      if (Notification.permission !== 'denied') {
+        try {
+          const result = await Notification.requestPermission();
+          if (result === 'granted') {
+            this.pushService.isSubscribed.set(true);
+            this.pushService.permission.set('granted');
+            this.toastService.success('¡Notificaciones activadas! 🔔');
+            setTimeout(() => {
+              this.pushService.showNotification('Star Crumbs 🍪', '¡Perfecto! Te avisaremos de novedades y pedidos.', '/');
+            }, 300);
+            this.pushService.tryVapidSubscribePub();
+            return;
+          }
+        } catch { /* fall through */ }
+      }
     }
+
+    // Fallback: in-app notifications (works on ALL browsers without permission)
+    this.pushService.isSubscribed.set(true);
+    this.toastService.success('Notificaciones en pantalla activadas ✅');
+    this.notifService.showInApp(
+      '¡Notificaciones activadas! 🍪',
+      'Verás alertas aquí dentro cuando tengas novedades.',
+      '/'
+    );
+  }
+
+  goToNotif() {
+    const url = this.notifService.inAppNotif()?.url || '/';
+    this.notifService.dismissInApp();
+    if (url !== '/') this.router.navigate([url]);
   }
 
   getSocialIcon(platform: string): string {
