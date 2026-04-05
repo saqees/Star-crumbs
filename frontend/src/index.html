@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <title>Star Crumbs 🍪</title>
+  <base href="/">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta name="description" content="Star Crumbs - Galletas artesanales rellenas deliciosas">
+  <link rel="icon" type="image/x-icon" href="favicon.ico" id="dynamic-favicon">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <!-- Core fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+  <!-- Extended font pack -->
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Cinzel:wght@400;600;700&family=Dancing+Script:wght@600;700&family=Pacifico&family=Abril+Fatface&family=Raleway:wght@300;400;700&family=Josefin+Sans:wght@300;400;600&family=Nunito:wght@400;600;700&family=Poppins:wght@300;400;600&family=Montserrat:wght@400;700&family=Lobster&family=Oswald:wght@400;600&family=Bebas+Neue&family=Sacramento&family=Great+Vibes&family=Satisfy&family=Righteous&family=Comfortaa:wght@400;600&family=Philosopher:ital,wght@0,400;1,400&family=IM+Fell+English:ital@0;1&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="manifest.webmanifest">
+  <!-- Theme color for Android Chrome -->
+  <meta name="theme-color" content="#C9956A">
+  <!-- iOS Safari PWA -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Star Crumbs">
+  <!-- iOS Touch Icons (REQUIRED for iOS Add to Home Screen) -->
+  <link rel="apple-touch-icon" href="icons/icon-180x180.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="icons/icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="icons/icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="128x128" href="icons/icon-128x128.png">
+  <!-- iOS Splash screen colors -->
+  <meta name="msapplication-TileColor" content="#C9956A">
+  <meta name="msapplication-TileImage" content="icons/icon-144x144.png">
+  <style>
+    input, select, textarea { font-size: 16px !important; }
+    * { -webkit-overflow-scrolling: touch; }
+  </style>
+  <!-- Service Worker registration -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+          .then(reg => console.log('SW registered:', reg.scope))
+          .catch(err => console.log('SW error:', err));
+      });
+    }
+  </script>
+</head>
+<body>
+  <app-root></app-root>
+</body>
+</html>
