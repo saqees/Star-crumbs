@@ -163,16 +163,22 @@ export class PwaPromptComponent implements OnInit, OnDestroy {
 
   async enableNotifications() {
     this.showNotifPrompt.set(false);
-    if (this.isIOS()) {
-      const isStandalone = (window.navigator as any).standalone === true;
-      if (!isStandalone) {
-        this.toast.info('📱 Instala la app primero, luego activa las notificaciones desde el perfil');
+    // First try browser notifications (no install needed, works on open tabs)
+    if ('Notification' in window) {
+      const perm = await Notification.requestPermission();
+      if (perm === 'granted') {
+        this.toast.success('¡Notificaciones activadas! 🔔');
+        // Also subscribe to push if supported
+        if (this.pushService.canUsePushOnDevice()) {
+          this.pushService.subscribe().catch(() => {});
+        }
         return;
       }
     }
-    const ok = await this.pushService.requestPermissionAndSubscribe();
-    if (ok) this.toast.success('¡Notificaciones activadas! 🔔');
-    else this.toast.error('No se pudieron activar las notificaciones');
+    // iOS fallback message
+    if (this.isIOS() && !(window.navigator as any).standalone) {
+      this.toast.info('📱 En iPhone: instala la app desde Safari para notificaciones push');
+    }
   }
 
   dismissNotifPrompt() {
