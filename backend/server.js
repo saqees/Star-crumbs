@@ -17,21 +17,11 @@ const allowedOrigins = process.env.CORS_ORIGIN
 // ═══════════════════════════════════════════════
 // SECURITY HEADERS (Helmet)
 // ═══════════════════════════════════════════════
+// Helmet — security headers (CSP disabled to not break Angular SPA)
 app.use(helmet({
-  contentSecurityPolicy: {
-    directives: {
-      defaultSrc: ["'self'"],
-      styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com', 'https://cdnjs.cloudflare.com'],
-      fontSrc: ["'self'", 'https://fonts.gstatic.com', 'https://cdnjs.cloudflare.com'],
-      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
-      imgSrc: ["'self'", 'data:', 'https:', 'blob:'],
-      connectSrc: ["'self'", ...allowedOrigins, 'wss:', 'ws:'],
-      frameSrc: ["'none'"],
-      objectSrc: ["'none'"],
-      upgradeInsecureRequests: process.env.NODE_ENV === 'production' ? [] : null,
-    }
-  },
+  contentSecurityPolicy: false,  // Angular handles its own CSP
   crossOriginEmbedderPolicy: false,
+  crossOriginOpenerPolicy: false,
 }));
 
 // ═══════════════════════════════════════════════
