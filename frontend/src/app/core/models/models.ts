@@ -90,6 +90,7 @@ export interface Notification {
   description: string;
   image_url?: string;
   admin_name?: string;
+  url?: string;
   is_read: boolean;
   created_at: string;
 }
