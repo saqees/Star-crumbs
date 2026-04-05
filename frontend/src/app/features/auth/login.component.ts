@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink, Router } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
+import { PushService } from '../../core/services/push.service';
 import { ToastService } from '../../core/services/toast.service';
 
 @Component({
@@ -77,7 +78,7 @@ export class LoginComponent {
   showPass = false;
   loading = signal(false);
 
-  constructor(private auth: AuthService, private toast: ToastService, private router: Router) {}
+  constructor(private auth: AuthService, private toast: ToastService, private router: Router, private push: PushService) {}
 
   login() {
     if (!this.email || !this.password) return;
@@ -86,6 +87,13 @@ export class LoginComponent {
       next: () => {
         this.toast.success('¡Bienvenido de vuelta! 🍪');
         this.router.navigate(['/']);
+        // Ask for browser notification permission right after login
+        // This shows the native browser prompt ("Star Crumbs wants to send notifications")
+        setTimeout(() => {
+          if ('Notification' in window && Notification.permission === 'default') {
+            this.push.requestPermission();
+          }
+        }, 800);
       },
       error: (e) => {
         this.loading.set(false);
