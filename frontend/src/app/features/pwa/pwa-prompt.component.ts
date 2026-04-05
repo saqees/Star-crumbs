@@ -163,14 +163,43 @@ export class PwaPromptComponent implements OnInit, OnDestroy {
 
   async enableNotifications() {
     this.showNotifPrompt.set(false);
-    // Simply request browser notification permission — no PWA install needed
-    const ok = await this.pushService.requestPermission();
-    if (ok) {
-      this.toast.success('¡Notificaciones activadas! 🔔 Recibirás alertas en el navegador.');
-    } else if (Notification.permission === 'denied') {
-      this.toast.error('Bloqueaste las notificaciones. Ve a ajustes del navegador para activarlas.');
-    } else {
-      this.toast.info('No se concedió permiso de notificaciones.');
+
+    if (!('Notification' in window)) {
+      this.toast.error('Tu navegador no soporta notificaciones');
+      return;
+    }
+    if (Notification.permission === 'denied') {
+      this.toast.error('Notificaciones bloqueadas. Toca el 🔒 en la barra del navegador para activarlas.');
+      return;
+    }
+    if (Notification.permission === 'granted') {
+      this.pushService.isSubscribed.set(true);
+      this.toast.success('¡Notificaciones ya activas! 🔔');
+      return;
+    }
+
+    // Call Notification.requestPermission() DIRECTLY here (user gesture context)
+    try {
+      const result = await Notification.requestPermission();
+      if (result === 'granted') {
+        this.pushService.isSubscribed.set(true);
+        this.pushService.permission.set('granted');
+        this.toast.success('¡Notificaciones activadas! 🔔');
+        setTimeout(() => {
+          this.pushService.showNotification(
+            'Star Crumbs 🍪',
+            '¡Perfecto! Te avisaremos de novedades y pedidos.',
+            '/'
+          );
+        }, 400);
+        this.pushService.tryVapidSubscribePub();
+      } else if (result === 'denied') {
+        this.toast.error('Bloqueaste las notificaciones. Cámbialo en el 🔒 de la URL.');
+      } else {
+        this.toast.info('Permiso no concedido. Puedes activarlo más tarde.');
+      }
+    } catch (e) {
+      this.toast.error('Error al activar. Prueba en Chrome o Firefox.');
     }
   }
 }
