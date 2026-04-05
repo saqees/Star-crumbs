@@ -625,7 +625,7 @@ export class AppComponent implements OnInit, OnDestroy {
       await this.pushService.unsubscribe();
       this.toastService.info('Notificaciones desactivadas');
     } else {
-      const ok = await this.pushService.requestPermissionAndSubscribe();
+      const ok = await this.pushService.requestPermission();
       if (ok) this.toastService.success('Notificaciones activadas 🔔');
       else this.toastService.error('No se pudo activar las notificaciones');
     }
