@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink, Router } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
-import { PushService } from '../../core/services/push.service';
 import { ToastService } from '../../core/services/toast.service';
 
 @Component({
@@ -78,7 +77,7 @@ export class LoginComponent {
   showPass = false;
   loading = signal(false);
 
-  constructor(private auth: AuthService, private toast: ToastService, private router: Router, private push: PushService) {}
+  constructor(private auth: AuthService, private toast: ToastService, private router: Router) {}
 
   login() {
     if (!this.email || !this.password) return;
@@ -87,20 +86,7 @@ export class LoginComponent {
       next: () => {
         this.toast.success('¡Bienvenido de vuelta! 🍪');
         this.router.navigate(['/']);
-        // Show native browser notification prompt after login
-        // Uses a tiny delay so the user sees the success message first
-        setTimeout(() => {
-          if ('Notification' in window && Notification.permission === 'default') {
-            Notification.requestPermission().then(result => {
-              if (result === 'granted') {
-                this.push.isSubscribed.set(true);
-                this.push.permission.set('granted');
-                this.push.showNotification('Star Crumbs 🍪', '¡Notificaciones activadas! Te avisaremos de novedades y pedidos.', '/');
-                this.push.tryVapidSubscribePub();
-              }
-            }).catch(() => {});
-          }
-        }, 800);
+
       },
       error: (e) => {
         this.loading.set(false);
