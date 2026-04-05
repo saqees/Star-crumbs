@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
+import { RouterOutlet } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { PwaPromptComponent } from './features/pwa/pwa-prompt.component';
 
@@ -9,8 +9,6 @@ import { PwaPromptComponent } from './features/pwa/pwa-prompt.component';
   imports: [
     CommonModule,
     RouterOutlet,
-    RouterLink,
-    RouterLinkActive,
     PwaPromptComponent
   ],
   template: `
