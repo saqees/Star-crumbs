@@ -87,11 +87,18 @@ export class LoginComponent {
       next: () => {
         this.toast.success('¡Bienvenido de vuelta! 🍪');
         this.router.navigate(['/']);
-        // Ask for browser notification permission right after login
-        // This shows the native browser prompt ("Star Crumbs wants to send notifications")
+        // Show native browser notification prompt after login
+        // Uses a tiny delay so the user sees the success message first
         setTimeout(() => {
           if ('Notification' in window && Notification.permission === 'default') {
-            this.push.requestPermission();
+            Notification.requestPermission().then(result => {
+              if (result === 'granted') {
+                this.push.isSubscribed.set(true);
+                this.push.permission.set('granted');
+                this.push.showNotification('Star Crumbs 🍪', '¡Notificaciones activadas! Te avisaremos de novedades y pedidos.', '/');
+                this.push.tryVapidSubscribePub();
+              }
+            }).catch(() => {});
           }
         }, 800);
       },
