@@ -38,7 +38,7 @@ export class NotificationService {
     this.notifications.update(list => [n, ...list]);
     this.unreadCount.update(c => c + 1);
     // Show browser notification popup (no install needed)
-    this.push.show(data.title, data.body, data.url || '/');
+    this.push.showNotification(data.title, data.body, data.url || '/');
   }
 
   create(data: { title: string; description: string; image_url?: string }) {
