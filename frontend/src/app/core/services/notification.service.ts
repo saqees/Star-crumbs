@@ -11,6 +11,10 @@ export class NotificationService {
   notifications = signal<Notification[]>([]);
   unreadCount = signal(0);
 
+  /** In-app popup notification (works on ALL browsers, no permission needed) */
+  inAppNotif = signal<{ title: string; body: string; url: string; icon: string } | null>(null);
+  private inAppTimer: any;
+
   constructor(private http: HttpClient, private push: PushService) {}
 
   load() {
@@ -23,22 +27,42 @@ export class NotificationService {
   }
 
   /**
-   * Add a real-time notification from Socket.io and show browser popup.
-   * No install needed — works in any open browser tab.
+   * Show a real-time notification from Socket.io.
+   * Works on ALL browsers without any permission:
+   *   1. In-app popup at top of screen (always)
+   *   2. Browser OS notification (if permission granted, desktop/Android)
    */
   addRealtime(data: { title: string; body: string; url?: string; icon?: string }) {
-    // Add to in-app bell
+    // 1. Add to bell counter
     const n: any = {
       id: crypto.randomUUID(),
       title: data.title,
       description: data.body,
       is_read: false,
-      created_at: new Date().toISOString()
+      created_at: new Date().toISOString(),
+      url: data.url
     };
     this.notifications.update(list => [n, ...list]);
     this.unreadCount.update(c => c + 1);
-    // Show browser notification popup (no install needed)
+
+    // 2. Show in-app popup (works everywhere, no permission needed)
+    this.showInApp(data.title, data.body, data.url || '/', data.icon || '🍪');
+
+    // 3. Also try browser notification if supported and allowed
     this.push.showNotification(data.title, data.body, data.url || '/');
+  }
+
+  /** Show a beautiful in-app popup — works on ALL browsers without any permission */
+  showInApp(title: string, body: string, url = '/', icon = '🍪') {
+    clearTimeout(this.inAppTimer);
+    this.inAppNotif.set({ title, body, url, icon });
+    // Auto-dismiss after 5 seconds
+    this.inAppTimer = setTimeout(() => this.inAppNotif.set(null), 5000);
+  }
+
+  dismissInApp() {
+    clearTimeout(this.inAppTimer);
+    this.inAppNotif.set(null);
   }
 
   create(data: { title: string; description: string; image_url?: string }) {
@@ -62,7 +86,6 @@ export class NotificationService {
   markAllRead() {
     this.notifications.update(list => list.map(n => ({ ...n, is_read: true })));
     this.unreadCount.set(0);
-    // Try API silently
     this.http.post(`${this.api}/notifications/read-all`, {}).subscribe({ error: () => {} });
   }
 
