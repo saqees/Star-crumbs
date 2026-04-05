@@ -4,115 +4,49 @@ import { environment } from '../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class PushService {
-  /** Is browser Notification API available? */
   readonly supported = typeof window !== 'undefined' && 'Notification' in window;
 
-  /** Current permission state */
   permission = signal<NotificationPermission>(
-    this.supported ? Notification.permission : 'denied'
+    (typeof window !== 'undefined' && 'Notification' in window)
+      ? Notification.permission
+      : 'denied'
   );
-
-  /** True once user granted permission */
   isSubscribed = signal(false);
 
   constructor(private http: HttpClient) {
     if (this.supported && Notification.permission === 'granted') {
       this.isSubscribed.set(true);
     }
-    // Also try VAPID push subscription silently in background
-    if (this.supported && Notification.permission === 'granted') {
-      this.tryVapidSubscribe();
-    }
   }
 
-  /**
-   * Trigger the native browser notification permission dialog.
-   * Shows: "[Site icon] Star Crumbs wants to send you notifications — Allow / Block"
-   * Works on: Chrome, Firefox, Edge, Safari (macOS), Android Chrome
-   * Does NOT require PWA install.
-   *
-   * Returns true if permission was granted.
-   */
-  async requestPermission(): Promise<boolean> {
-    if (!this.supported) return false;
-
-    // Already granted
-    if (Notification.permission === 'granted') {
-      this.permission.set('granted');
-      this.isSubscribed.set(true);
-      this.showWelcome();
-      return true;
-    }
-
-    // Already blocked — can't re-ask (browser decision)
-    if (Notification.permission === 'denied') {
-      this.permission.set('denied');
-      return false;
-    }
-
-    try {
-      // ← THIS is the call that shows the native browser prompt
-      const result = await Notification.requestPermission();
-      this.permission.set(result);
-
-      if (result === 'granted') {
-        this.isSubscribed.set(true);
-        // Show confirmation notification immediately so user sees it works
-        this.showWelcome();
-        // Also register for push (background notifications when browser closed)
-        this.tryVapidSubscribe();
-        return true;
-      }
-      return false;
-    } catch {
-      return false;
-    }
-  }
-
-  /**
-   * Show a notification in the browser.
-   * Works in any open browser tab — no install, no service worker needed.
-   */
-  show(title: string, body: string, url = '/') {
+  // ── Show a browser notification ─────────────────────────────────────────
+  // Works in any open browser tab, no install needed.
+  showNotification(title: string, body: string, url = '/') {
     if (!this.supported || Notification.permission !== 'granted') return;
     try {
       const n = new Notification(title, {
         body,
-        icon: '/icons/icon-192x192.png',   // App icon shown in the notification
-        badge: '/icons/badge-72x72.png',    // Small monochrome icon (Android)
-        tag: 'star-crumbs',                 // Replace old notifications of same tag
-        silent: false,
+        icon: '/icons/icon-192x192.png',
+        badge: '/icons/badge-72x72.png',
+        tag: 'star-crumbs',
       });
-      n.onclick = () => {
-        window.focus();
-        if (url !== '/') window.location.href = url;
-        n.close();
-      };
-      // Auto-close after 6 seconds
+      n.onclick = () => { window.focus(); if (url !== '/') window.location.href = url; n.close(); };
       setTimeout(() => n.close(), 6000);
-    } catch {
-      // Some browsers restrict Notification() outside SW — fail silently
-    }
+    } catch { /* browser may restrict outside SW */ }
   }
 
-  /** Welcome notification shown right after granting permission */
-  private showWelcome() {
-    setTimeout(() => {
-      this.show(
-        '¡Notificaciones activadas! 🍪',
-        'Recibirás alertas de tus pedidos y novedades de Star Crumbs.',
-        '/'
-      );
-    }, 500);
-  }
+  // Alias for template binding
+  show = this.showNotification.bind(this);
 
-  /** Optional: subscribe to VAPID push (background notifications when browser closed) */
-  private async tryVapidSubscribe() {
+  // ── VAPID push subscription (background, optional) ──────────────────────
+  // Called AFTER browser permission is already granted.
+  // Fails silently if not configured — browser notifications still work.
+  async tryVapidSubscribePub() {
     if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
     try {
       const reg = await navigator.serviceWorker.ready;
       const existing = await reg.pushManager.getSubscription();
-      if (existing) return; // Already subscribed
+      if (existing) return;
 
       const resp: any = await this.http
         .get<{ publicKey: string }>(`${environment.apiUrl}/push/vapid-key`)
@@ -125,12 +59,9 @@ export class PushService {
       });
       const s = sub.toJSON();
       await this.http.post(`${environment.apiUrl}/push/subscribe`, {
-        endpoint: s.endpoint,
-        keys: s.keys,
+        endpoint: s.endpoint, keys: s.keys,
       }).toPromise();
-    } catch {
-      // VAPID not configured — browser notifications still work fine
-    }
+    } catch { /* vapid not configured — ok */ }
   }
 
   async unsubscribe() {
