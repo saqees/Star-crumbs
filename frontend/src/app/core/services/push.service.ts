@@ -5,12 +5,12 @@ import { environment } from '../../../environments/environment';
 @Injectable({ providedIn: 'root' })
 export class PushService {
   /**
-   * Soporte real de Web Push:
-   *  - Chrome/Edge/Firefox desktop y Android: sí, sin necesidad de instalar PWA
-   *  - Safari macOS 16+ (Ventura): sí, sin necesidad de instalar PWA
-   *  - Safari iOS 16.4+: sí, PERO requiere estar instalada como PWA
-   *  - Firefox Android: sí
-   *  - Samsung Internet: sí
+   * Web Push es soportado por:
+   *  - Chrome/Edge desktop y Android       → sí, sin PWA
+   *  - Firefox desktop y Android           → sí, sin PWA
+   *  - Safari macOS 16+ (Ventura)          → sí, sin PWA
+   *  - Samsung Internet                    → sí, sin PWA
+   *  - Safari iOS 16.4+                    → SOLO como PWA instalada (limitación de Apple)
    */
   readonly isSupported: boolean =
     typeof window !== 'undefined' &&
@@ -33,7 +33,6 @@ export class PushService {
   }
 
   isIOS(): boolean {
-    // Detecta iOS incluyendo iPad con userAgent de desktop (iOS 13+)
     return /iPad|iPhone|iPod/.test(navigator.userAgent) ||
       (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
   }
@@ -45,16 +44,18 @@ export class PushService {
   }
 
   /**
-   * Retorna true si el navegador/dispositivo puede recibir push ahora mismo.
+   * Retorna true si este navegador puede recibir push AHORA MISMO.
+   * Solo bloquea Safari iOS sin PWA instalada (limitación de Apple).
+   * Todos los demás navegadores se permiten directamente.
    */
   canUsePushOnDevice(): boolean {
     if (!this.isSupported) return false;
-    if (this.isIOS()) return this.isInstalledPWA();
+    if (this.isIOS() && !this.isInstalledPWA()) return false;
     return true;
   }
 
   /**
-   * Razón por la que no se puede usar push (para mostrar al usuario).
+   * Razón por la que no se puede usar push.
    * Retorna null si no hay ningún problema.
    */
   getBlockedReason(): string | null {
@@ -65,7 +66,7 @@ export class PushService {
       return 'En iPhone/iPad debes instalar Star Crumbs primero: toca Compartir → "Agregar a pantalla de inicio".';
     }
     if (this.permission() === 'denied') {
-      return 'Bloqueaste las notificaciones. Ve a la configuración del navegador y permite las notificaciones para este sitio.';
+      return 'Bloqueaste las notificaciones. Ve a la configuración del navegador y permítelas para este sitio.';
     }
     return null;
   }
@@ -73,7 +74,6 @@ export class PushService {
   async checkSubscription(): Promise<void> {
     if (!this.isSupported) return;
     try {
-      // Espera al SW con timeout de 5s para no bloquear si el SW falla al registrar
       const reg = await Promise.race([
         navigator.serviceWorker.ready,
         new Promise<never>((_, reject) =>
@@ -88,6 +88,7 @@ export class PushService {
   }
 
   async requestPermissionAndSubscribe(): Promise<boolean> {
+    // Solo bloquear en Safari iOS sin PWA instalada
     const blocked = this.getBlockedReason();
     if (blocked) {
       console.warn('Push no disponible:', blocked);
@@ -110,20 +111,17 @@ export class PushService {
       const reg = this.registration || await navigator.serviceWorker.ready;
       this.registration = reg;
 
-      // Obtener VAPID key pública del backend
       const resp = await this.http
         .get<{ publicKey: string }>(`${environment.apiUrl}/push/vapid-key`)
         .toPromise() as any;
       const publicKey = resp?.publicKey;
       if (!publicKey) throw new Error('No se recibió VAPID key del servidor');
 
-      // Suscribir este navegador al push del servidor
       const subscription = await reg.pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey: this.urlBase64ToUint8Array(publicKey)
       });
 
-      // Enviar la suscripción al backend para guardarla
       const sub = subscription.toJSON();
       await this.http.post(`${environment.apiUrl}/push/subscribe`, {
         endpoint: sub.endpoint,
