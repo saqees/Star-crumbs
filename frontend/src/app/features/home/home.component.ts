@@ -348,36 +348,101 @@ import { environment } from '../../../environments/environment';
     .combo-home-specs { display:flex; align-items:center; gap:8px; font-size:.75rem; color:var(--text-mid); }
     .combo-disc { background:var(--error); color:#fff; padding:2px 7px; border-radius:var(--radius-full); font-weight:700; }
     /* ── Why section ── */
-    .why-header { margin-bottom: 40px; }
-    .why-eyebrow { display:block; font-size:.78rem; font-weight:700; letter-spacing:3px; text-transform:uppercase; margin-bottom:8px; }
-    .why-header h2 { margin-bottom:10px; }
-    .why-section-desc { color:var(--text-mid); max-width:560px; margin:0 auto; font-size:.95rem; }
+    /* ── Why-Us section header ── */
+    .why-header { margin-bottom: 44px; }
+    .why-eyebrow {
+      display: block; font-size: .72rem; font-weight: 700;
+      letter-spacing: 3.5px; text-transform: uppercase;
+      color: var(--warm-capuchino); margin-bottom: 10px;
+    }
+    .why-header h2 {
+      font-family: var(--font-display); font-size: clamp(1.6rem,3vw,2.4rem);
+      color: var(--mocca-bean); margin-bottom: 12px; line-height: 1.15;
+    }
+    .why-section-desc {
+      color: var(--text-mid); max-width: 540px;
+      margin: 0 auto; font-size: .97rem; line-height: 1.7;
+    }
     /* Grid column variants */
     .why-grid { display:grid; gap:24px; }
     .why-cols-2 { grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); }
     .why-cols-3 { grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); }
     .why-cols-4 { grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); }
-    /* Card shapes */
-    .why-card { background:#fff; transition:all var(--transition); overflow:hidden; }
-    .why-card:hover { transform:translateY(-6px); box-shadow:var(--shadow-md); }
-    .why-shape-rounded  { border-radius:var(--radius-xl); padding:28px 22px; box-shadow:var(--shadow-sm); }
-    .why-shape-square   { border-radius:4px; padding:28px 22px; box-shadow:var(--shadow-sm); }
-    .why-shape-pill     { border-radius:999px; padding:28px 32px; box-shadow:var(--shadow-sm); }
-    .why-shape-flat     { border-radius:0; border-bottom:3px solid var(--warm-capuchino); padding:24px 18px; box-shadow:none; }
-    .why-shape-outlined { border-radius:var(--radius-lg); border:2px solid var(--almond); padding:26px 20px; box-shadow:none; background:transparent; }
-    /* Media */
-    .why-media { margin-bottom:16px; display:flex; justify-content:center; }
-    .why-media-circle,.why-media-square { width:64px; height:64px; display:flex; align-items:center; justify-content:center; }
-    .why-media-circle { border-radius:50%; }
-    .why-media-square  { border-radius:12px; }
-    .why-item-img { width:100%; max-height:160px; object-fit:cover; display:block; }
-    .why-img-full { max-height:none; height:200px; }
-    .why-img-circle { width:72px; height:72px; border-radius:50%; object-fit:cover; }
-    .why-item-icon { font-size:2.4rem; line-height:1; }
+    /* ── Why-Us cards — default always beautiful ── */
+    .why-card {
+      background: #fff;
+      border-radius: var(--radius-xl);
+      padding: 28px 22px;
+      box-shadow: var(--shadow-sm);
+      transition: all var(--transition);
+      overflow: hidden;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .why-card:hover { transform: translateY(-7px); box-shadow: var(--shadow-md); }
+
+    /* Card shape overrides */
+    .why-shape-rounded  { border-radius: var(--radius-xl); }
+    .why-shape-square   { border-radius: 4px; }
+    .why-shape-pill     { border-radius: 999px; padding: 28px 36px; }
+    .why-shape-flat     {
+      border-radius: 0; border-bottom: 3px solid var(--warm-capuchino);
+      box-shadow: none; background: transparent;
+    }
+    .why-shape-outlined {
+      border-radius: var(--radius-lg); border: 2px solid var(--almond);
+      box-shadow: none; background: transparent;
+    }
+
+    /* Media (icon / image container) */
+    .why-media {
+      margin-bottom: 18px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    /* Icon with circle/square background */
+    .why-media-circle {
+      width: 72px; height: 72px; border-radius: 50%;
+      background: var(--almond-light);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .why-media-square {
+      width: 72px; height: 72px; border-radius: 16px;
+      background: var(--almond-light);
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    /* Images */
+    .why-item-img { width: 100%; max-height: 160px; object-fit: cover; display: block; }
+    .why-img-full { max-height: none; height: 200px; }
+    .why-img-circle { width: 72px; height: 72px; border-radius: 50%; object-fit: cover; }
+
+    /* Icon emoji */
+    .why-item-icon {
+      font-size: 2.6rem;
+      line-height: 1;
+      display: block;
+      filter: drop-shadow(0 2px 4px rgba(181,98,46,0.18));
+    }
+
     /* Text body */
-    .why-text-body { padding:0 4px; }
-    .why-text-body h3 { font-size:1.05rem; margin-bottom:8px; }
-    .why-item-desc { font-size:.88rem; line-height:1.65; }
+    .why-text-body { width: 100%; padding: 0 4px; }
+    .why-text-body h3 {
+      font-size: 1.08rem;
+      font-family: var(--font-display);
+      color: var(--mocca-bean);
+      margin-bottom: 8px;
+      line-height: 1.25;
+    }
+    .why-item-desc {
+      font-size: .875rem;
+      color: var(--text-light);
+      line-height: 1.7;
+      margin: 0;
+    }
     /* List */
     .why-list { list-style:disc; padding-left:20px; font-size:.85rem; line-height:1.7; text-align:left; margin-top:6px; }
     .why-list-num { list-style:decimal; }
@@ -432,7 +497,39 @@ export class HomeComponent implements OnInit, OnDestroy {
   featured = signal<Product[]>([]);
   slides = signal<any[]>([]);
   selectedProduct = signal<Product | null>(null);
-  whyUs = signal<any>({ title: '¿Por qué Star Crumbs?', items: [] });
+  whyUs = signal<any>({
+    title: '¿Por qué Star Crumbs?',
+    subtitle: 'LA DIFERENCIA',
+    description: 'Galletas artesanales hechas con los mejores ingredientes y mucho amor.',
+    bg_color: '#F5E6D3',
+    title_color: '#5C3A1E',
+    accent_color: '#C9956A',
+    title_align: 'center',
+    columns: '3',
+    items: [
+      {
+        icon: '🍪', title: 'Ingredientes naturales',
+        content_type: 'text', card_shape: 'rounded', card_style: 'default',
+        bg_color: '#fff', title_color: '#5C3A1E', desc_color: '#9C7355',
+        desc: 'Usamos solo ingredientes frescos y naturales, sin conservantes.',
+        text_align: 'center'
+      },
+      {
+        icon: '👩‍🍳', title: 'Hechas con amor',
+        content_type: 'text', card_shape: 'rounded', card_style: 'default',
+        bg_color: '#fff', title_color: '#5C3A1E', desc_color: '#9C7355',
+        desc: 'Cada galleta es preparada a mano con recetas únicas y especiales.',
+        text_align: 'center'
+      },
+      {
+        icon: '🚀', title: 'Entrega rápida',
+        content_type: 'text', card_shape: 'rounded', card_style: 'default',
+        bg_color: '#fff', title_color: '#5C3A1E', desc_color: '#9C7355',
+        desc: 'Llevamos tus galletas favoritas directo a tu ambiente del SENA.',
+        text_align: 'center'
+      }
+    ]
+  });
   featuredCombos = signal<any[]>([]);
 
   constructor(
