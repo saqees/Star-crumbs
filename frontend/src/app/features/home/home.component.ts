@@ -146,125 +146,103 @@ import { environment } from '../../../environments/environment';
       </div>
     </section>
 
-    <!-- WHY US — fully dynamic -->
+    <!-- WHY US -->
     <section class="section why-section"
-             [style.background]="whyUs().bg_color||'var(--creamy-latte)'"
-             [style.padding]="whyUs().padding||'64px 0'">
+             [style.background]="whyUs().bg_color||'var(--creamy-latte)'">
       <div class="container">
-        <!-- Section header -->
-        <div class="why-header"
-             [style.textAlign]="whyUs().title_align||'center'">
+
+        <!-- Header -->
+        <div class="why-header" [style.textAlign]="whyUs().title_align||'center'">
           <span *ngIf="whyUs().subtitle" class="why-eyebrow"
                 [style.color]="whyUs().accent_color||'var(--warm-capuchino)'">
             {{whyUs().subtitle}}
           </span>
           <h2 [style.color]="whyUs().title_color||'var(--mocca-bean)'"
-              [style.fontFamily]="whyUs().title_font?whyUs().title_font+',serif':''">
+              [style.fontFamily]="whyUs().title_font ? whyUs().title_font+',serif' : 'var(--font-display)'">
             {{whyUs().title || '¿Por qué Star Crumbs?'}}
           </h2>
-          <p *ngIf="whyUs().description" class="why-section-desc"
-             [style.color]="whyUs().desc_color||'var(--text-mid)'">
-            {{whyUs().description}}
-          </p>
+          <p *ngIf="whyUs().description" class="why-section-desc">{{whyUs().description}}</p>
         </div>
 
-        <!-- Items grid -->
-        <div class="why-grid" [class]="'why-cols-' + (whyUs().columns||'3')">
-          <div *ngFor="let w of whyUs().items" class="why-card"
-               [class]="'why-shape-' + (w.card_shape||'rounded')"
-               [class.why-card-image-bg]="w.card_style==='image_bg' && w.image"
-               [style.background]="w.card_style==='image_bg' && w.image ? '' : (w.bg_color||'')">
+        <!-- Cards grid -->
+        <div class="why-grid"
+             [class.why-cols-2]="whyUs().columns==='2'"
+             [class.why-cols-4]="whyUs().columns==='4'">
 
-            <!-- Image background mode -->
-            <div *ngIf="w.card_style==='image_bg' && w.image"
-                 class="why-card-img-bg"
-                 [style.backgroundImage]="'url('+w.image+')'">
-              <div class="why-card-img-overlay"></div>
-              <div class="why-card-img-content">
-                <h3 [style.color]="w.title_color||'#fff'" [style.fontFamily]="w.font?w.font+',serif':''">{{w.title}}</h3>
-                <ng-container *ngTemplateOutlet="contentBlock; context:{w:w, dark:true}"></ng-container>
-              </div>
+          <article *ngFor="let w of whyUs().items"
+                   class="why-card"
+                   [class.why-shape-square]="w.card_shape==='square'"
+                   [class.why-shape-pill]="w.card_shape==='pill'"
+                   [class.why-shape-flat]="w.card_shape==='flat'"
+                   [class.why-shape-outlined]="w.card_shape==='outlined'"
+                   [class.why-style-imgbg]="w.card_style==='image_bg' && w.image"
+                   [style.background]="(w.card_style==='image_bg'&&w.image) ? '' : (w.bg_color||'#fff')"
+                   [style.backgroundImage]="(w.card_style==='image_bg'&&w.image) ? 'url('+w.image+')' : ''">
+
+            <!-- Dark overlay for image-bg style -->
+            <div *ngIf="w.card_style==='image_bg' && w.image" class="why-imgbg-overlay"></div>
+
+            <!-- Icon / small image (not shown in full_image or image_bg modes) -->
+            <div *ngIf="(w.icon || w.image) && w.card_style!=='image_bg'"
+                 class="why-icon-wrap"
+                 [class.why-icon-circle]="w.icon_shape==='circle'"
+                 [class.why-icon-square]="w.icon_shape==='square'"
+                 [style.background]="w.icon_bg||(w.icon_shape?'var(--almond-light)':'')">
+              <img *ngIf="w.image && w.card_style==='full_image'"
+                   [src]="w.image" [alt]="w.title" class="why-full-img">
+              <img *ngIf="w.image && w.card_style!=='full_image' && w.card_style!=='text_only'"
+                   [src]="w.image" [alt]="w.title" class="why-small-img"
+                   [class.why-small-img-circle]="w.icon_shape==='circle'">
+              <span *ngIf="!w.image" class="why-emoji">{{w.icon}}</span>
             </div>
 
-            <!-- Normal mode (icon/image + text) -->
-            <ng-container *ngIf="w.card_style!=='image_bg' || !w.image">
-              <!-- Media: icon or image -->
-              <div class="why-media" *ngIf="w.icon||w.image"
-                   [class.why-media-circle]="w.icon_shape==='circle'"
-                   [class.why-media-square]="w.icon_shape==='square'"
-                   [style.background]="w.icon_bg||''"
-                   [style.alignSelf]="w.media_align||'center'">
-                <img *ngIf="w.image && w.card_style!=='text_only'" [src]="w.image" [alt]="w.title"
-                     class="why-item-img"
-                     [class.why-img-full]="w.card_style==='full_image'"
-                     [class.why-img-circle]="w.icon_shape==='circle'">
-                <span *ngIf="!w.image && w.icon" class="why-item-icon">{{w.icon}}</span>
-              </div>
-              <!-- Text content -->
-              <div class="why-text-body" [style.textAlign]="w.text_align||'center'">
-                <h3 *ngIf="w.title"
-                    [style.color]="w.title_color||'var(--mocca-bean)'"
-                    [style.fontFamily]="w.font?w.font+',serif':''"
-                    [style.fontSize]="w.title_size||''">
-                  {{w.title}}
-                </h3>
-                <ng-container *ngTemplateOutlet="contentBlock; context:{w:w, dark:false}"></ng-container>
-              </div>
-            </ng-container>
-          </div>
+            <!-- Text body -->
+            <div class="why-body" [style.textAlign]="w.text_align||'center'">
+              <h3 *ngIf="w.title"
+                  [style.color]="w.card_style==='image_bg' ? (w.title_color||'#fff') : (w.title_color||'var(--mocca-bean)')"
+                  [style.fontFamily]="w.font ? w.font+',serif' : 'var(--font-display)'"
+                  [style.fontSize]="w.title_size||''">
+                {{w.title}}
+              </h3>
+
+              <!-- text -->
+              <p *ngIf="(!w.content_type||w.content_type==='text'||w.content_type==='mixed') && w.desc"
+                 class="why-desc"
+                 [style.color]="w.card_style==='image_bg' ? 'rgba(255,255,255,0.88)' : (w.desc_color||'var(--text-light)')">
+                {{w.desc}}
+              </p>
+
+              <!-- list -->
+              <ul *ngIf="(w.content_type==='list'||w.content_type==='mixed') && w.list_items?.length"
+                  class="why-list" [class.why-list-num]="w.list_style==='numbered'"
+                  [style.color]="w.desc_color||'var(--text-light)'">
+                <li *ngFor="let li of w.list_items">{{li}}</li>
+              </ul>
+
+              <!-- ingredients -->
+              <ul *ngIf="w.content_type==='ingredients' && w.list_items?.length" class="why-ingredients">
+                <li *ngFor="let li of w.list_items"
+                    [style.color]="w.card_style==='image_bg' ? 'rgba(255,255,255,0.88)' : (w.desc_color||'var(--text-light)')">
+                  <span class="ingr-dot" [style.background]="w.accent_color||'var(--warm-capuchino)'"></span>
+                  {{li}}
+                </li>
+              </ul>
+
+              <!-- button -->
+              <a *ngIf="w.content_type==='button' && w.button_text"
+                 [routerLink]="w.button_url||'/'"
+                 class="why-btn"
+                 [style.background]="w.button_color||'var(--warm-capuchino)'"
+                 [style.color]="w.button_text_color||'#fff'"
+                 [style.borderRadius]="w.button_radius||'var(--radius-full)'">
+                {{w.button_text}} <span *ngIf="w.button_icon">{{w.button_icon}}</span>
+              </a>
+            </div>
+          </article>
+
         </div>
       </div>
     </section>
-
-    <!-- ── Content block template ── -->
-    <ng-template #contentBlock let-w="w" let-dark="dark">
-      <!-- Type: text (plain description) -->
-      <p *ngIf="(!w.content_type||w.content_type==='text') && w.desc"
-         class="why-item-desc"
-         [style.color]="dark ? 'rgba(255,255,255,0.85)' : (w.desc_color||'var(--text-light)')"
-         [style.fontFamily]="w.font?w.font+',sans-serif':''">
-        {{w.desc}}
-      </p>
-
-      <!-- Type: list (bullet points or numbered) -->
-      <ul *ngIf="w.content_type==='list' && w.list_items?.length"
-          class="why-list" [class.why-list-num]="w.list_style==='numbered'"
-          [style.color]="dark ? 'rgba(255,255,255,0.85)' : (w.desc_color||'var(--text-light)')">
-        <li *ngFor="let li of w.list_items" [style.fontFamily]="w.font?w.font+',sans-serif':''">{{li}}</li>
-      </ul>
-
-      <!-- Type: ingredients (special bullet with cookie icons) -->
-      <ul *ngIf="w.content_type==='ingredients' && w.list_items?.length" class="why-ingredients">
-        <li *ngFor="let li of w.list_items"
-            [style.color]="dark ? 'rgba(255,255,255,0.9)' : (w.desc_color||'var(--text-light)')"
-            [style.fontFamily]="w.font?w.font+',sans-serif':''">
-          <span class="ingr-dot" [style.background]="w.accent_color||'var(--warm-capuchino)'"></span>
-          {{li}}
-        </li>
-      </ul>
-
-      <!-- Type: button -->
-      <a *ngIf="w.content_type==='button' && w.button_text" [href]="w.button_url||'/'"
-         class="why-btn"
-         [style.background]="w.button_color||'var(--warm-capuchino)'"
-         [style.color]="w.button_text_color||'#fff'"
-         [style.borderRadius]="w.button_radius||'var(--radius-full)'"
-         [style.fontFamily]="w.font?w.font+',sans-serif':''">
-        {{w.button_text}}
-        <span *ngIf="w.button_icon">{{w.button_icon}}</span>
-      </a>
-
-      <!-- Type: mixed (desc + list) -->
-      <ng-container *ngIf="w.content_type==='mixed'">
-        <p *ngIf="w.desc" class="why-item-desc"
-           [style.color]="dark ? 'rgba(255,255,255,0.85)' : (w.desc_color||'var(--text-light)')">{{w.desc}}</p>
-        <ul *ngIf="w.list_items?.length" class="why-list"
-            [style.color]="dark ? 'rgba(255,255,255,0.8)' : (w.desc_color||'var(--text-light)')">
-          <li *ngFor="let li of w.list_items">{{li}}</li>
-        </ul>
-      </ng-container>
-    </ng-template>
-
     <app-product-modal *ngIf="selectedProduct()" [product]="selectedProduct()!" (close)="selectedProduct.set(null)"></app-product-modal>
   `,
   styles: [`
@@ -347,126 +325,203 @@ import { environment } from '../../../environments/environment';
     .combo-home-info p  { font-size:.79rem; color:var(--text-light); margin:0; min-height:28px; }
     .combo-home-specs { display:flex; align-items:center; gap:8px; font-size:.75rem; color:var(--text-mid); }
     .combo-disc { background:var(--error); color:#fff; padding:2px 7px; border-radius:var(--radius-full); font-weight:700; }
-    /* ── Why section ── */
-    /* ── Why-Us section header ── */
+    /* ══════════════════════════════════════
+       WHY STAR CRUMBS — section styles
+       ══════════════════════════════════════ */
+    .why-section { padding: 64px 0; }
+
+    /* Header */
     .why-header { margin-bottom: 44px; }
     .why-eyebrow {
       display: block; font-size: .72rem; font-weight: 700;
       letter-spacing: 3.5px; text-transform: uppercase;
-      color: var(--warm-capuchino); margin-bottom: 10px;
+      margin-bottom: 10px;
     }
     .why-header h2 {
-      font-family: var(--font-display); font-size: clamp(1.6rem,3vw,2.4rem);
-      color: var(--mocca-bean); margin-bottom: 12px; line-height: 1.15;
+      font-family: var(--font-display);
+      font-size: clamp(1.6rem, 3vw, 2.4rem);
+      color: var(--mocca-bean); margin-bottom: 12px;
     }
     .why-section-desc {
       color: var(--text-mid); max-width: 540px;
-      margin: 0 auto; font-size: .97rem; line-height: 1.7;
+      margin: 0 auto; font-size: .95rem; line-height: 1.7;
     }
-    /* Grid column variants */
-    .why-grid { display:grid; gap:24px; }
-    .why-cols-2 { grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); }
-    .why-cols-3 { grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); }
-    .why-cols-4 { grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); }
-    /* ── Why-Us cards — default always beautiful ── */
+
+    /* Grid */
+    .why-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 24px;
+    }
+    .why-cols-2 { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+    .why-cols-4 { grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
+
+    /* Card base — always has good defaults */
     .why-card {
       background: #fff;
       border-radius: var(--radius-xl);
-      padding: 28px 22px;
+      padding: 32px 24px 28px;
       box-shadow: var(--shadow-sm);
-      transition: all var(--transition);
-      overflow: hidden;
       text-align: center;
       display: flex;
       flex-direction: column;
       align-items: center;
+      gap: 0;
+      transition: transform var(--transition), box-shadow var(--transition);
+      position: relative;
+      overflow: hidden;
     }
-    .why-card:hover { transform: translateY(-7px); box-shadow: var(--shadow-md); }
+    .why-card:hover {
+      transform: translateY(-7px);
+      box-shadow: var(--shadow-md);
+    }
 
-    /* Card shape overrides */
-    .why-shape-rounded  { border-radius: var(--radius-xl); }
-    .why-shape-square   { border-radius: 4px; }
-    .why-shape-pill     { border-radius: 999px; padding: 28px 36px; }
+    /* Card shape modifiers */
+    .why-shape-square   { border-radius: 8px; }
+    .why-shape-pill     { border-radius: 999px; padding: 32px 36px; }
     .why-shape-flat     {
-      border-radius: 0; border-bottom: 3px solid var(--warm-capuchino);
-      box-shadow: none; background: transparent;
+      border-radius: 0;
+      border-bottom: 3px solid var(--warm-capuchino);
+      box-shadow: none;
+      background: transparent !important;
     }
     .why-shape-outlined {
-      border-radius: var(--radius-lg); border: 2px solid var(--almond);
-      box-shadow: none; background: transparent;
+      border-radius: var(--radius-lg);
+      border: 2px solid var(--almond);
+      box-shadow: none;
+      background: transparent !important;
     }
 
-    /* Media (icon / image container) */
-    .why-media {
+    /* Image-background style */
+    .why-style-imgbg {
+      background-size: cover !important;
+      background-position: center !important;
+      min-height: 260px;
+      justify-content: flex-end;
+    }
+    .why-imgbg-overlay {
+      position: absolute; inset: 0;
+      background: linear-gradient(to top, rgba(0,0,0,.70) 0%, rgba(0,0,0,.15) 65%);
+    }
+
+    /* Icon / image wrapper */
+    .why-icon-wrap {
       margin-bottom: 18px;
       display: flex;
-      justify-content: center;
       align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
     }
-    /* Icon with circle/square background */
-    .why-media-circle {
-      width: 72px; height: 72px; border-radius: 50%;
+    .why-icon-circle {
+      width: 76px; height: 76px; border-radius: 50%;
       background: var(--almond-light);
-      display: flex; align-items: center; justify-content: center;
     }
-    .why-media-square {
-      width: 72px; height: 72px; border-radius: 16px;
+    .why-icon-square {
+      width: 76px; height: 76px; border-radius: 16px;
       background: var(--almond-light);
-      display: flex; align-items: center; justify-content: center;
     }
-
-    /* Images */
-    .why-item-img { width: 100%; max-height: 160px; object-fit: cover; display: block; }
-    .why-img-full { max-height: none; height: 200px; }
-    .why-img-circle { width: 72px; height: 72px; border-radius: 50%; object-fit: cover; }
-
-    /* Icon emoji */
-    .why-item-icon {
-      font-size: 2.6rem;
+    .why-emoji {
+      font-size: 2.8rem;
       line-height: 1;
       display: block;
-      filter: drop-shadow(0 2px 4px rgba(181,98,46,0.18));
+      filter: drop-shadow(0 2px 6px rgba(181,98,46,0.20));
     }
+    .why-full-img {
+      width: calc(100% + 48px);
+      margin: -32px -24px 20px;
+      height: 180px;
+      object-fit: cover;
+      display: block;
+    }
+    .why-small-img {
+      width: 64px; height: 64px;
+      object-fit: cover; border-radius: var(--radius-md);
+    }
+    .why-small-img-circle { border-radius: 50%; }
 
     /* Text body */
-    .why-text-body { width: 100%; padding: 0 4px; }
-    .why-text-body h3 {
-      font-size: 1.08rem;
+    .why-body { width: 100%; position: relative; z-index: 1; }
+    .why-body h3 {
       font-family: var(--font-display);
+      font-size: 1.08rem;
       color: var(--mocca-bean);
-      margin-bottom: 8px;
+      margin-bottom: 9px;
       line-height: 1.25;
     }
-    .why-item-desc {
+    .why-desc {
       font-size: .875rem;
       color: var(--text-light);
       line-height: 1.7;
       margin: 0;
     }
+
     /* List */
-    .why-list { list-style:disc; padding-left:20px; font-size:.85rem; line-height:1.7; text-align:left; margin-top:6px; }
-    .why-list-num { list-style:decimal; }
+    .why-list {
+      list-style: disc;
+      padding-left: 18px;
+      text-align: left;
+      font-size: .85rem;
+      color: var(--text-light);
+      line-height: 1.75;
+      margin: 8px 0 0;
+    }
+    .why-list-num { list-style: decimal; }
+
     /* Ingredients */
-    .why-ingredients { list-style:none; padding:0; margin-top:7px; display:flex; flex-direction:column; gap:5px; text-align:left; }
-    .why-ingredients li { display:flex; align-items:center; gap:8px; font-size:.85rem; line-height:1.4; }
-    .ingr-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+    .why-ingredients {
+      list-style: none;
+      padding: 0;
+      margin: 10px 0 0;
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+      text-align: left;
+    }
+    .why-ingredients li {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      font-size: .85rem;
+      line-height: 1.4;
+      color: var(--text-light);
+    }
+    .ingr-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--warm-capuchino);
+      flex-shrink: 0;
+    }
+
     /* Button */
-    .why-btn { display:inline-flex; align-items:center; gap:6px; margin-top:12px; padding:10px 22px; font-size:.85rem; font-weight:700; text-decoration:none; transition:all var(--transition); }
-    .why-btn:hover { opacity:.9; transform:translateY(-2px); }
-    /* Image background card */
-    .why-card-img-bg { min-height:220px; background-size:cover; background-position:center; position:relative; border-radius:inherit; display:flex; align-items:flex-end; }
-    .why-card-img-overlay { position:absolute; inset:0; background:linear-gradient(to top, rgba(0,0,0,.65) 0%, rgba(0,0,0,.1) 60%); border-radius:inherit; }
-    .why-card-img-content { position:relative; z-index:1; padding:20px; }
-    .why-card-img-content h3 { color:#fff; margin-bottom:6px; }
+    .why-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 14px;
+      padding: 10px 22px;
+      font-size: .85rem;
+      font-weight: 700;
+      text-decoration: none;
+      background: var(--warm-capuchino);
+      color: #fff;
+      border-radius: var(--radius-full);
+      transition: all var(--transition);
+    }
+    .why-btn:hover { opacity: .88; transform: translateY(-2px); }
+
     /* Responsive */
-    @media(max-width:600px) {
-      .why-cols-3,.why-cols-4 { grid-template-columns:1fr 1fr; }
-      .why-cols-2 { grid-template-columns:1fr; }
+    @media (max-width: 640px) {
+      .why-grid, .why-cols-2, .why-cols-4 {
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+      }
+      .why-card { padding: 22px 16px 20px; }
+      .why-emoji { font-size: 2.2rem; }
     }
-    @media(max-width:400px) {
-      .why-cols-3,.why-cols-4 { grid-template-columns:1fr; }
+    @media (max-width: 400px) {
+      .why-grid, .why-cols-2, .why-cols-4 { grid-template-columns: 1fr; }
     }
-    @media (max-width: 768px) {
+
+        @media (max-width: 768px) {
       .slide { flex-direction: column; text-align: center; padding: 40px 20px 72px; gap: 16px; min-height: 360px; }
       .slide-btns { justify-content: center; }
       .slide-right { order: -1; }
