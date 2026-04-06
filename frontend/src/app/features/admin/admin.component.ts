@@ -548,6 +548,73 @@ type Tab = 'products'|'categories'|'orders'|'users'|'chat'|'carousel'|'cajitas'|
 
             </div><!-- /why-editor-right -->
           </div><!-- /why-editor-cols -->
+
+          <!-- ── Editor de contenido del modal ── -->
+          <div class="why-modal-editor">
+            <div class="wme-header">
+              <i class="fas fa-layer-group"></i>
+              <strong>Contenido interior (ventana emergente)</strong>
+              <span class="wme-hint">Al presionar la tarjeta, el usuario verá esto en un modal</span>
+            </div>
+            <div class="wme-blocks">
+              <div *ngFor="let block of (item.modal_content?.blocks||[]); let bi=index" class="wme-block">
+                <div class="wme-block-top">
+                  <select [(ngModel)]="block.type" class="form-control wme-type-sel"
+                          (ngModelChange)="onBlockTypeChange(block)">
+                    <option value="text">📝 Párrafo de texto</option>
+                    <option value="heading">🔤 Subtítulo</option>
+                    <option value="list">📋 Lista con puntos</option>
+                    <option value="numbered">🔢 Lista numerada</option>
+                    <option value="image">🖼️ Imagen</option>
+                    <option value="quote">💬 Destacado / cita</option>
+                    <option value="divider">➖ Separador</option>
+                  </select>
+                  <div class="wme-block-actions">
+                    <button class="ab" title="Subir" [disabled]="bi===0"
+                            (click)="moveBlock(item,bi,-1)"><i class="fas fa-arrow-up"></i></button>
+                    <button class="ab" title="Bajar" [disabled]="bi===(item.modal_content.blocks.length-1)"
+                            (click)="moveBlock(item,bi,1)"><i class="fas fa-arrow-down"></i></button>
+                    <button class="ab ab-d" (click)="removeBlock(item,bi)"><i class="fas fa-trash"></i></button>
+                  </div>
+                </div>
+                <!-- Texto / Subtítulo / Cita -->
+                <textarea *ngIf="block.type==='text'||block.type==='heading'||block.type==='quote'"
+                          [(ngModel)]="block.value" class="form-control wme-textarea"
+                          [rows]="block.type==='text'?3:1"
+                          [placeholder]="block.type==='heading'?'Subtítulo...':block.type==='quote'?'Frase destacada...':'Escribe el párrafo...'"></textarea>
+                <!-- Lista -->
+                <div *ngIf="block.type==='list'||block.type==='numbered'" class="wme-list-items">
+                  <div *ngFor="let li of (block.items||[]); let li_i=index" class="list-item-row">
+                    <input type="text" [(ngModel)]="block.items[li_i]" class="form-control"
+                           [placeholder]="'Elemento '+(li_i+1)">
+                    <button class="ab ab-d" (click)="removeBlockItem(block,li_i)"><i class="fas fa-times"></i></button>
+                  </div>
+                  <button class="btn btn-secondary btn-sm" style="margin-top:6px"
+                          (click)="addBlockItem(block)"><i class="fas fa-plus"></i> Agregar elemento</button>
+                </div>
+                <!-- Imagen -->
+                <div *ngIf="block.type==='image'" class="wme-image-editor">
+                  <div class="fup-btn">
+                    <label class="fup-label">
+                      <i class="fas fa-image"></i> {{block.url?'Cambiar imagen':'Subir imagen'}}
+                      <input type="file" accept="image/*" class="fup-input"
+                             (change)="onBlockImageChange($event,block)">
+                    </label>
+                  </div>
+                  <img *ngIf="block.url" [src]="block.url" style="max-width:100%;max-height:100px;border-radius:8px;margin-top:6px;object-fit:cover">
+                  <input type="text" [(ngModel)]="block.caption" class="form-control"
+                         placeholder="Pie de foto (opcional)" style="margin-top:6px">
+                </div>
+              </div>
+              <div *ngIf="!item.modal_content?.blocks?.length" class="wme-empty">
+                <i class="fas fa-plus-circle"></i> Sin bloques. Agrega el primero.
+              </div>
+            </div>
+            <button class="btn btn-secondary btn-sm wme-add-btn" (click)="addBlock(item)">
+              <i class="fas fa-plus"></i> Agregar bloque
+            </button>
+          </div>
+
         </div>
 
         <div class="btn-row mt-md">
@@ -1934,6 +2001,22 @@ type Tab = 'products'|'categories'|'orders'|'users'|'chat'|'carousel'|'cajitas'|
     .why-editor-cols { display:grid; grid-template-columns:1fr 1fr; gap:0; }
     .why-editor-left  { padding:16px; border-right:1px solid var(--almond); }
     .why-editor-right { padding:16px; }
+    /* ── Modal content editor ── */
+    .why-modal-editor { background:var(--almond-light); border-top:2px dashed var(--almond); padding:16px; }
+    .wme-header { display:flex; align-items:center; gap:8px; margin-bottom:12px; flex-wrap:wrap; }
+    .wme-header i { color:var(--warm-capuchino); }
+    .wme-header strong { font-size:.9rem; color:var(--mocca-bean); }
+    .wme-hint { font-size:.74rem; color:var(--text-light); margin-left:auto; }
+    .wme-blocks { display:flex; flex-direction:column; gap:10px; margin-bottom:10px; }
+    .wme-block { background:#fff; border-radius:10px; padding:12px; border:1px solid var(--almond); }
+    .wme-block-top { display:flex; gap:8px; align-items:center; margin-bottom:10px; }
+    .wme-type-sel { flex:1; font-size:.8rem; padding:5px 8px; }
+    .wme-block-actions { display:flex; gap:4px; flex-shrink:0; }
+    .wme-textarea { font-size:.85rem; resize:vertical; }
+    .wme-list-items { display:flex; flex-direction:column; gap:6px; }
+    .wme-image-editor { display:flex; flex-direction:column; gap:6px; }
+    .wme-empty { color:var(--text-light); font-size:.82rem; text-align:center; padding:12px; }
+    .wme-add-btn { width:100%; justify-content:center; }
     .why-editor-section-lbl {
       font-size:.66rem; font-weight:700; text-transform:uppercase;
       letter-spacing:1.2px; color:var(--text-light);
@@ -2368,7 +2451,15 @@ export class AdminComponent implements OnInit {
   }
 
   // Why Us
-  addWhyItem() { this.whyUsData.items.push({icon:'🍪',title:'Nueva tarjeta',desc:'Descripción',image:'',content_type:'text',card_shape:'rounded',card_style:'default',bg_color:'#ffffff',title_color:'#5C3A1E',desc_color:'#9C7355',text_align:'center',list_items:[]}); }
+  addWhyItem() {
+    this.whyUsData.items.push({
+      icon:'🍪', title:'Nueva tarjeta', desc:'Descripción corta visible en la tarjeta',
+      image:'', content_type:'text', card_shape:'rounded', card_style:'default',
+      bg_color:'#ffffff', title_color:'#5C3A1E', desc_color:'#9C7355',
+      text_align:'center', list_items:[],
+      modal_content: { blocks: [] }
+    });
+  }
   removeWhyItem(i:number) { this.whyUsData.items.splice(i,1); }
   async onWhyItemImage(event: Event, i:number) {
     const file=(event.target as HTMLInputElement).files?.[0]; if(!file) return;
@@ -2438,6 +2529,39 @@ export class AdminComponent implements OnInit {
   ensureList(item: any) { if (!item.list_items) item.list_items = ['']; }
   addListItem(item: any) { item.list_items = [...(item.list_items || []), '']; }
   removeListItem(item: any, j: number) { item.list_items.splice(j, 1); }
+
+  // ── Métodos para bloques del modal ──
+  addBlock(item: any) {
+    if (!item.modal_content) item.modal_content = { blocks: [] };
+    if (!item.modal_content.blocks) item.modal_content.blocks = [];
+    item.modal_content.blocks.push({ type: 'text', value: '' });
+  }
+  removeBlock(item: any, bi: number) { item.modal_content.blocks.splice(bi, 1); }
+  moveBlock(item: any, bi: number, dir: number) {
+    const blocks = item.modal_content.blocks;
+    const target = bi + dir;
+    if (target < 0 || target >= blocks.length) return;
+    [blocks[bi], blocks[target]] = [blocks[target], blocks[bi]];
+  }
+  onBlockTypeChange(block: any) {
+    if (block.type === 'list' || block.type === 'numbered') {
+      if (!block.items) block.items = [''];
+    }
+  }
+  addBlockItem(block: any) {
+    if (!block.items) block.items = [];
+    block.items.push('');
+  }
+  removeBlockItem(block: any, i: number) { block.items.splice(i, 1); }
+  async onBlockImageChange(event: Event, block: any) {
+    const file = (event.target as HTMLInputElement).files?.[0];
+    if (!file) return;
+    const b64 = await this.uploadService.fileToBase64(file);
+    this.uploadService.uploadImage(b64, 'star-crumbs/why-us').subscribe({
+      next: r => { block.url = r.url; },
+      error: () => this.toast.error('Error al subir imagen')
+    });
+  }
 
   // ── Cajitas / Combos ── (see methods below)
 
