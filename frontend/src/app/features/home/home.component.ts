@@ -146,14 +146,13 @@ import { environment } from '../../../environments/environment';
       </div>
     </section>
 
-    <!-- WHY US — fully dynamic -->
+    <!-- WHY US — tarjetas con modal al click -->
     <section class="section why-section"
              [style.background]="whyUs().bg_color||'var(--creamy-latte)'"
              [style.padding]="whyUs().padding||'64px 0'">
       <div class="container">
         <!-- Section header -->
-        <div class="why-header"
-             [style.textAlign]="whyUs().title_align||'center'">
+        <div class="why-header" [style.textAlign]="whyUs().title_align||'center'">
           <span *ngIf="whyUs().subtitle" class="why-eyebrow"
                 [style.color]="whyUs().accent_color||'var(--warm-capuchino)'">
             {{whyUs().subtitle}}
@@ -168,12 +167,14 @@ import { environment } from '../../../environments/environment';
           </p>
         </div>
 
-        <!-- Items grid -->
+        <!-- Items grid — solo icono/imagen + título + desc corta, click abre modal -->
         <div class="why-grid" [class]="'why-cols-' + (whyUs().columns||'3')">
-          <div *ngFor="let w of whyUs().items" class="why-card"
+          <div *ngFor="let w of whyUs().items"
+               class="why-card"
                [class]="'why-shape-' + (w.card_shape||'rounded')"
-               [class.why-card-image-bg]="w.card_style==='image_bg' && w.image"
-               [style.background]="w.card_style==='image_bg' && w.image ? '' : (w.bg_color||'')">
+               [class.why-card-has-detail]="w.modal_content?.blocks?.length || w.list_items?.length"
+               [style.background]="w.card_style==='image_bg' && w.image ? '' : (w.bg_color||'')"
+               (click)="openWhyModal(w)">
 
             <!-- Image background mode -->
             <div *ngIf="w.card_style==='image_bg' && w.image"
@@ -181,26 +182,24 @@ import { environment } from '../../../environments/environment';
                  [style.backgroundImage]="'url('+w.image+')'">
               <div class="why-card-img-overlay"></div>
               <div class="why-card-img-content">
+                <span *ngIf="w.icon" class="why-card-img-icon">{{w.icon}}</span>
                 <h3 [style.color]="w.title_color||'#fff'" [style.fontFamily]="w.font?w.font+',serif':''">{{w.title}}</h3>
-                <ng-container *ngTemplateOutlet="contentBlock; context:{w:w, dark:true}"></ng-container>
+                <p *ngIf="w.desc" class="why-card-img-desc">{{w.desc | slice:0:80}}{{w.desc?.length>80?'…':''}}</p>
               </div>
             </div>
 
-            <!-- Normal mode (icon/image + text) -->
+            <!-- Normal mode: solo icono/imagen + título + desc corta -->
             <ng-container *ngIf="w.card_style!=='image_bg' || !w.image">
-              <!-- Media: icon or image -->
               <div class="why-media" *ngIf="w.icon||w.image"
                    [class.why-media-circle]="w.icon_shape==='circle'"
                    [class.why-media-square]="w.icon_shape==='square'"
-                   [style.background]="w.icon_bg||''"
-                   [style.alignSelf]="w.media_align||'center'">
+                   [style.background]="w.icon_bg||''">
                 <img *ngIf="w.image && w.card_style!=='text_only'" [src]="w.image" [alt]="w.title"
                      class="why-item-img"
                      [class.why-img-full]="w.card_style==='full_image'"
                      [class.why-img-circle]="w.icon_shape==='circle'">
                 <span *ngIf="!w.image && w.icon" class="why-item-icon">{{w.icon}}</span>
               </div>
-              <!-- Text content -->
               <div class="why-text-body" [style.textAlign]="w.text_align||'center'">
                 <h3 *ngIf="w.title"
                     [style.color]="w.title_color||'var(--mocca-bean)'"
@@ -208,7 +207,14 @@ import { environment } from '../../../environments/environment';
                     [style.fontSize]="w.title_size||''">
                   {{w.title}}
                 </h3>
-                <ng-container *ngTemplateOutlet="contentBlock; context:{w:w, dark:false}"></ng-container>
+                <p *ngIf="w.desc" class="why-item-desc"
+                   [style.color]="w.desc_color||'var(--text-light)'"
+                   [style.fontFamily]="w.font?w.font+',sans-serif':''">
+                  {{w.desc | slice:0:100}}{{w.desc?.length>100?'…':''}}
+                </p>
+              </div>
+              <div *ngIf="w.modal_content?.blocks?.length || w.list_items?.length" class="why-card-hint">
+                <span>Ver más <i class="fas fa-arrow-right"></i></span>
               </div>
             </ng-container>
           </div>
@@ -216,54 +222,69 @@ import { environment } from '../../../environments/environment';
       </div>
     </section>
 
-    <!-- ── Content block template ── -->
-    <ng-template #contentBlock let-w="w" let-dark="dark">
-      <!-- Type: text (plain description) -->
-      <p *ngIf="(!w.content_type||w.content_type==='text') && w.desc"
-         class="why-item-desc"
-         [style.color]="dark ? 'rgba(255,255,255,0.85)' : (w.desc_color||'var(--text-light)')"
-         [style.fontFamily]="w.font?w.font+',sans-serif':''">
-        {{w.desc}}
-      </p>
-
-      <!-- Type: list (bullet points or numbered) -->
-      <ul *ngIf="w.content_type==='list' && w.list_items?.length"
-          class="why-list" [class.why-list-num]="w.list_style==='numbered'"
-          [style.color]="dark ? 'rgba(255,255,255,0.85)' : (w.desc_color||'var(--text-light)')">
-        <li *ngFor="let li of w.list_items" [style.fontFamily]="w.font?w.font+',sans-serif':''">{{li}}</li>
-      </ul>
-
-      <!-- Type: ingredients (special bullet with cookie icons) -->
-      <ul *ngIf="w.content_type==='ingredients' && w.list_items?.length" class="why-ingredients">
-        <li *ngFor="let li of w.list_items"
-            [style.color]="dark ? 'rgba(255,255,255,0.9)' : (w.desc_color||'var(--text-light)')"
-            [style.fontFamily]="w.font?w.font+',sans-serif':''">
-          <span class="ingr-dot" [style.background]="w.accent_color||'var(--warm-capuchino)'"></span>
-          {{li}}
-        </li>
-      </ul>
-
-      <!-- Type: button -->
-      <a *ngIf="w.content_type==='button' && w.button_text" [href]="w.button_url||'/'"
-         class="why-btn"
-         [style.background]="w.button_color||'var(--warm-capuchino)'"
-         [style.color]="w.button_text_color||'#fff'"
-         [style.borderRadius]="w.button_radius||'var(--radius-full)'"
-         [style.fontFamily]="w.font?w.font+',sans-serif':''">
-        {{w.button_text}}
-        <span *ngIf="w.button_icon">{{w.button_icon}}</span>
-      </a>
-
-      <!-- Type: mixed (desc + list) -->
-      <ng-container *ngIf="w.content_type==='mixed'">
-        <p *ngIf="w.desc" class="why-item-desc"
-           [style.color]="dark ? 'rgba(255,255,255,0.85)' : (w.desc_color||'var(--text-light)')">{{w.desc}}</p>
-        <ul *ngIf="w.list_items?.length" class="why-list"
-            [style.color]="dark ? 'rgba(255,255,255,0.8)' : (w.desc_color||'var(--text-light)')">
-          <li *ngFor="let li of w.list_items">{{li}}</li>
-        </ul>
-      </ng-container>
-    </ng-template>
+    <!-- ── MODAL DE TARJETA WHY US ── -->
+    <div class="why-modal-overlay" *ngIf="whyModal" (click)="onWhyOverlayClick($event)">
+      <div class="why-modal">
+        <div class="why-modal-header"
+             [style.background]="whyModal.bg_color||'#fff'"
+             [style.borderColor]="whyModal.accent_color||'var(--almond)'">
+          <div class="why-modal-media">
+            <img *ngIf="whyModal.image" [src]="whyModal.image" [alt]="whyModal.title" class="why-modal-img">
+            <span *ngIf="!whyModal.image && whyModal.icon" class="why-modal-icon">{{whyModal.icon}}</span>
+          </div>
+          <div class="why-modal-title-wrap">
+            <h2 [style.color]="whyModal.title_color||'var(--mocca-bean)'"
+                [style.fontFamily]="whyModal.font?whyModal.font+',serif':''">
+              {{whyModal.title}}
+            </h2>
+            <p *ngIf="whyModal.desc" class="why-modal-subtitle"
+               [style.color]="whyModal.desc_color||'var(--text-mid)'">
+              {{whyModal.desc}}
+            </p>
+          </div>
+          <button class="why-modal-close" (click)="whyModal=null">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div class="why-modal-body">
+          <ng-container *ngFor="let block of whyModal.modal_content?.blocks">
+            <p *ngIf="block.type==='text'" class="wmb-text"
+               [style.color]="block.color||'var(--text-mid)'"
+               [style.fontFamily]="whyModal.font?whyModal.font+',sans-serif':''">{{block.value}}</p>
+            <h3 *ngIf="block.type==='heading'" class="wmb-heading"
+                [style.color]="whyModal.title_color||'var(--mocca-bean)'">{{block.value}}</h3>
+            <ul *ngIf="block.type==='list'" class="wmb-list">
+              <li *ngFor="let li of block.items" [style.color]="block.color||'var(--text-mid)'">
+                <span class="wmb-dot" [style.background]="whyModal.accent_color||'var(--warm-capuchino)'"></span>{{li}}
+              </li>
+            </ul>
+            <ol *ngIf="block.type==='numbered'" class="wmb-list wmb-numbered">
+              <li *ngFor="let li of block.items" [style.color]="block.color||'var(--text-mid)'">{{li}}</li>
+            </ol>
+            <div *ngIf="block.type==='image' && block.url" class="wmb-image-wrap">
+              <img [src]="block.url" [alt]="block.caption||''" class="wmb-image">
+              <p *ngIf="block.caption" class="wmb-caption">{{block.caption}}</p>
+            </div>
+            <hr *ngIf="block.type==='divider'" class="wmb-divider">
+            <blockquote *ngIf="block.type==='quote'" class="wmb-quote"
+                        [style.borderColor]="whyModal.accent_color||'var(--warm-capuchino)'">{{block.value}}</blockquote>
+          </ng-container>
+          <!-- Fallback legacy content -->
+          <ng-container *ngIf="!whyModal.modal_content?.blocks?.length">
+            <ul *ngIf="whyModal.list_items?.length" class="wmb-list"
+                [class.wmb-numbered]="whyModal.list_style==='numbered'">
+              <li *ngFor="let li of whyModal.list_items">
+                <span *ngIf="whyModal.list_style!=='numbered'" class="wmb-dot"
+                      [style.background]="whyModal.accent_color||'var(--warm-capuchino)'"></span>{{li}}
+              </li>
+            </ul>
+          </ng-container>
+        </div>
+        <div class="why-modal-footer">
+          <button class="btn btn-primary btn-sm" (click)="whyModal=null">Cerrar</button>
+        </div>
+      </div>
+    </div>
 
     <app-product-modal *ngIf="selectedProduct()" [product]="selectedProduct()!" (close)="selectedProduct.set(null)"></app-product-modal>
   `,
@@ -393,6 +414,14 @@ import { environment } from '../../../environments/environment';
     .why-card-img-overlay { position:absolute; inset:0; background:linear-gradient(to top, rgba(0,0,0,.65) 0%, rgba(0,0,0,.1) 60%); border-radius:inherit; }
     .why-card-img-content { position:relative; z-index:1; padding:20px; }
     .why-card-img-content h3 { color:#fff; margin-bottom:6px; }
+    .why-card-img-icon { font-size:1.8rem; display:block; margin-bottom:6px; }
+    .why-card-img-desc { color:rgba(255,255,255,0.85); font-size:.84rem; margin:4px 0 0; }
+    /* Card clickable + hint */
+    .why-card { cursor:pointer; position:relative; }
+    .why-card-has-detail:hover { transform:translateY(-6px); box-shadow:var(--shadow-md); }
+    .why-card-hint { margin-top:10px; text-align:center; font-size:.78rem; font-weight:700;
+      color:var(--warm-capuchino); opacity:0; transition:opacity var(--transition); }
+    .why-card:hover .why-card-hint { opacity:1; }
     /* Responsive */
     @media(max-width:600px) {
       .why-cols-3,.why-cols-4 { grid-template-columns:1fr 1fr; }
@@ -401,6 +430,45 @@ import { environment } from '../../../environments/environment';
     @media(max-width:400px) {
       .why-cols-3,.why-cols-4 { grid-template-columns:1fr; }
     }
+    /* ── MODAL WHY US ── */
+    .why-modal-overlay { position:fixed; inset:0; z-index:10000; background:rgba(0,0,0,0.55);
+      backdrop-filter:blur(4px); display:flex; align-items:center; justify-content:center;
+      padding:16px; animation:wmoFadeIn 0.2s ease; }
+    @keyframes wmoFadeIn { from{opacity:0} to{opacity:1} }
+    .why-modal { background:var(--cream-white); border-radius:20px; width:100%; max-width:520px;
+      max-height:88vh; overflow:hidden; display:flex; flex-direction:column;
+      box-shadow:0 24px 80px rgba(93,58,30,0.28); animation:wmoSlideUp 0.25s cubic-bezier(0.4,0,0.2,1); }
+    @keyframes wmoSlideUp { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:translateY(0)} }
+    .why-modal-header { display:flex; align-items:center; gap:14px; padding:20px;
+      border-bottom:3px solid var(--almond); flex-shrink:0; }
+    .why-modal-media { flex-shrink:0; }
+    .why-modal-img { width:64px; height:64px; border-radius:14px; object-fit:cover;
+      box-shadow:0 4px 14px rgba(0,0,0,0.12); }
+    .why-modal-icon { font-size:3rem; line-height:1; }
+    .why-modal-title-wrap { flex:1; }
+    .why-modal-title-wrap h2 { font-size:1.2rem; margin:0 0 4px; }
+    .why-modal-subtitle { font-size:.86rem; margin:0; }
+    .why-modal-close { width:34px; height:34px; border-radius:50%; border:none;
+      background:var(--almond-light); cursor:pointer; display:flex; align-items:center;
+      justify-content:center; font-size:.9rem; color:var(--mocca-bean);
+      flex-shrink:0; transition:background var(--transition); }
+    .why-modal-close:hover { background:var(--almond); }
+    .why-modal-body { flex:1; overflow-y:auto; padding:22px 24px; display:flex; flex-direction:column; gap:14px; }
+    .wmb-text { font-size:.92rem; line-height:1.7; margin:0; }
+    .wmb-heading { font-size:1.05rem; font-weight:700; color:var(--mocca-bean); margin:6px 0 2px; }
+    .wmb-list { list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:8px; }
+    .wmb-list li { display:flex; align-items:flex-start; gap:10px; font-size:.9rem; line-height:1.5; }
+    .wmb-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; margin-top:5px; }
+    .wmb-numbered { list-style:decimal; padding-left:20px; }
+    .wmb-numbered li { display:list-item; }
+    .wmb-image-wrap { border-radius:12px; overflow:hidden; }
+    .wmb-image { width:100%; max-height:220px; object-fit:cover; display:block; }
+    .wmb-caption { font-size:.75rem; color:var(--text-light); text-align:center; margin:6px 0 0; }
+    .wmb-divider { border:none; border-top:1px solid var(--almond-light); margin:4px 0; }
+    .wmb-quote { border-left:4px solid var(--warm-capuchino); margin:0; padding:10px 16px;
+      font-style:italic; font-size:.9rem; background:var(--almond-light); border-radius:0 8px 8px 0; }
+    .why-modal-footer { padding:14px 20px; border-top:1px solid var(--almond-light);
+      display:flex; justify-content:flex-end; flex-shrink:0; background:var(--cream-white); }
     @media (max-width: 768px) {
       .slide { flex-direction: column; text-align: center; padding: 40px 20px 72px; gap: 16px; min-height: 360px; }
       .slide-btns { justify-content: center; }
@@ -433,6 +501,12 @@ export class HomeComponent implements OnInit, OnDestroy {
   slides = signal<any[]>([]);
   selectedProduct = signal<Product | null>(null);
   whyUs = signal<any>({ title: '¿Por qué Star Crumbs?', items: [] });
+  whyModal: any = null;
+
+  openWhyModal(w: any) { this.whyModal = w; }
+  onWhyOverlayClick(e: MouseEvent) {
+    if ((e.target as HTMLElement).classList.contains('why-modal-overlay')) this.whyModal = null;
+  }
   featuredCombos = signal<any[]>([]);
 
   constructor(
