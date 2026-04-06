@@ -41,7 +41,7 @@ type Tab = 'products'|'categories'|'orders'|'users'|'chat'|'carousel'|'cajitas'|
         <i [class]="t.icon"></i><span>{{t.label}}</span>
       </button>
       <p class="slbl">Personalización</p>
-      <button *ngFor="let t of tabs.slice(9)" class="tab-btn" [class.active]="activeTab()===t.key" (click)="setTab(t.key)">
+      <button *ngFor="let t of tabs.slice(8)" class="tab-btn" [class.active]="activeTab()===t.key" (click)="setTab(t.key)">
         <i [class]="t.icon"></i><span>{{t.label}}</span>
       </button>
     </aside>
