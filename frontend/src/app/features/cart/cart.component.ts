@@ -325,12 +325,29 @@ import { environment } from '../../../environments/environment';
 export class CartComponent {
   paymentMethod = 'nequi';
   notes = '';
+  allergies = '';
   ordering = signal(false);
-  banner: any = null;
   orderSuccess = signal(false);
   showPayModal = false;
+  banner: any = null;
+  receiptUrl = '';
+  receiptPreview = '';
+  uploadingReceipt = signal(false);
+  confirmationAnnouncement = signal<any>(null);
 
-  constructor(public cart: CartService, private http: HttpClient, private toast: ToastService) { this.http.get<any>(`${environment.apiUrl}/site-settings/page_banner_cart`).subscribe({next:s=>{if(s?.setting_value)this.banner=s.setting_value;}}); }
+  constructor(
+    public cart: CartService,
+    private http: HttpClient,
+    private toast: ToastService,
+    private uploadService: UploadService
+  ) {
+    this.http.get<any>(`${environment.apiUrl}/site-settings/page_banner_cart`).subscribe({
+      next: s => { if (s?.setting_value) this.banner = s.setting_value; }
+    });
+    this.http.get<any>(`${environment.apiUrl}/site-settings/order_confirmation_announcement`).subscribe({
+      next: s => { if (s?.setting_value) this.confirmationAnnouncement.set(s.setting_value); }
+    });
+  }
 
   increaseQty(item: any) { this.cart.updateQuantity(item.id, item.quantity + 1); }
   decreaseQty(item: any) {
