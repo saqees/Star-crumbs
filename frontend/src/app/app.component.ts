@@ -1,7 +1,8 @@
 import { Component, OnInit, OnDestroy, effect, signal } from '@angular/core';
-import { RouterOutlet, RouterLink, RouterLinkActive, Router } from '@angular/router';
+import { RouterOutlet, RouterLink, RouterLinkActive, Router, NavigationEnd } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
+import { filter } from 'rxjs/operators';
 import { AuthService } from './core/services/auth.service';
 import { CartService } from './core/services/cart.service';
 import { NotificationService } from './core/services/notification.service';
@@ -140,7 +141,52 @@ import { PushService } from './core/services/push.service';
     <app-chat *ngIf="showChat" (close)="showChat=false"></app-chat>
 
     <app-pwa-prompt></app-pwa-prompt>
+
+    <!-- ── ANUNCIOS TOP ── -->
+    <div *ngFor="let ann of visibleAnnouncements('top')"
+         class="ann-banner ann-top"
+         [style.background]="ann.bg_color||'#E3F2FD'"
+         [style.color]="ann.text_color||'#1565C0'"
+         [style.borderColor]="ann.border_color||'#90CAF9'">
+      <img *ngIf="ann.image_url" [src]="ann.image_url" class="ann-banner-img" alt="">
+      <span class="ann-banner-icon" *ngIf="ann.icon">{{ann.icon}}</span>
+      <div class="ann-banner-text">
+        <strong [style.fontFamily]="ann.font">{{ann.title}}</strong>
+        <span *ngIf="ann.message" [style.fontFamily]="ann.font"> — {{ann.message}}</span>
+      </div>
+      <button *ngIf="ann.show_close" class="ann-close" (click)="dismissAnn(ann)">✕</button>
+    </div>
+
     <main class="main-content"><router-outlet></router-outlet></main>
+
+    <!-- ── ANUNCIOS BOTTOM ── -->
+    <div *ngFor="let ann of visibleAnnouncements('bottom')"
+         class="ann-banner ann-bottom"
+         [style.background]="ann.bg_color||'#E3F2FD'"
+         [style.color]="ann.text_color||'#1565C0'"
+         [style.borderColor]="ann.border_color||'#90CAF9'">
+      <img *ngIf="ann.image_url" [src]="ann.image_url" class="ann-banner-img" alt="">
+      <span class="ann-banner-icon" *ngIf="ann.icon">{{ann.icon}}</span>
+      <div class="ann-banner-text">
+        <strong [style.fontFamily]="ann.font">{{ann.title}}</strong>
+        <span *ngIf="ann.message" [style.fontFamily]="ann.font"> — {{ann.message}}</span>
+      </div>
+      <button *ngIf="ann.show_close" class="ann-close" (click)="dismissAnn(ann)">✕</button>
+    </div>
+
+    <!-- ── ANUNCIOS FLOTANTES ── -->
+    <div *ngFor="let ann of visibleAnnouncements('floating')"
+         class="ann-floating"
+         [style.background]="ann.bg_color||'#fff'"
+         [style.color]="ann.text_color||'#333'"
+         [style.borderColor]="ann.border_color||'#ddd'">
+      <img *ngIf="ann.image_url" [src]="ann.image_url" class="ann-float-img" alt="">
+      <div class="ann-float-body">
+        <strong [style.fontFamily]="ann.font">{{ann.icon}} {{ann.title}}</strong>
+        <p *ngIf="ann.message" [style.fontFamily]="ann.font">{{ann.message}}</p>
+      </div>
+      <button *ngIf="ann.show_close" class="ann-close ann-float-close" (click)="dismissAnn(ann)">✕</button>
+    </div>
 
     <!-- FOOTER -->
     <footer class="footer">
@@ -671,6 +717,27 @@ import { PushService } from './core/services/push.service';
       .ngm-footer .btn { width: 100%; justify-content: center; }
     }
 
+    /* ─── ANUNCIOS ─── */
+    .ann-banner { display:flex; align-items:center; gap:10px; padding:10px 18px;
+      border-bottom:2px solid; font-size:.88rem; flex-wrap:wrap; z-index:900; position:relative; }
+    .ann-top { border-top:none; }
+    .ann-bottom { border-bottom:none; border-top:2px solid; }
+    .ann-banner-img { width:32px; height:32px; object-fit:cover; border-radius:6px; flex-shrink:0; }
+    .ann-banner-icon { font-size:1.2rem; flex-shrink:0; }
+    .ann-banner-text { flex:1; min-width:0; }
+    .ann-close { background:none; border:none; cursor:pointer; opacity:0.6; font-size:1rem;
+      padding:2px 6px; border-radius:4px; flex-shrink:0; color:inherit; transition:opacity .2s; }
+    .ann-close:hover { opacity:1; }
+    .ann-floating { position:fixed; bottom:80px; right:20px; z-index:9500; max-width:300px;
+      border-radius:14px; border:1.5px solid; padding:14px 16px; box-shadow:0 8px 32px rgba(0,0,0,.15);
+      display:flex; gap:10px; align-items:flex-start; animation:annFadeIn .3s ease; }
+    @keyframes annFadeIn { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+    .ann-float-img { width:48px; height:48px; object-fit:cover; border-radius:8px; flex-shrink:0; }
+    .ann-float-body { flex:1; }
+    .ann-float-body strong { display:block; font-size:.9rem; margin-bottom:3px; }
+    .ann-float-body p { font-size:.82rem; margin:0; opacity:.85; }
+    .ann-float-close { position:absolute; top:8px; right:8px; }
+
     /* ─── TOAST ─── */
     .toast-stack { position: fixed; bottom: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
 
@@ -774,6 +841,9 @@ export class AppComponent implements OnInit, OnDestroy {
   showChat = false;
   showNotifGuide = false;
   notifGuideTab: 'chrome' | 'android' | 'safari' | 'firefox' = 'chrome';
+  pageAnnouncements: any[] = [];
+  dismissedAnns = new Set<string>();
+  currentRoute = '';
   navConfig = signal<any>(null);
 
   footerConfig = signal<any>(null);
@@ -805,7 +875,10 @@ export class AppComponent implements OnInit, OnDestroy {
     window.addEventListener('scroll', this.onScroll);
     document.addEventListener('click', this.onDocClick);
     this.loadSiteSettings();
-
+    // Rastrear ruta actual para filtrar anuncios por página
+    this.router.events.pipe(filter(e => e instanceof NavigationEnd)).subscribe((e: any) => {
+      this.currentRoute = e.urlAfterRedirects || e.url || '/';
+    });
   }
 
   loadSiteSettings() {
@@ -840,6 +913,10 @@ export class AppComponent implements OnInit, OnDestroy {
     });
     this.http.get<any>(`${environment.apiUrl}/site-settings/social_media`).subscribe({
       next: s => { if (s?.setting_value) this.socialLinks.set(s.setting_value.links || []); },
+      error: () => {}
+    });
+    this.http.get<any>(`${environment.apiUrl}/site-settings/announcements`).subscribe({
+      next: s => { if (s?.setting_value) this.pageAnnouncements = s.setting_value.items || []; },
       error: () => {}
     });
   }
@@ -896,6 +973,30 @@ export class AppComponent implements OnInit, OnDestroy {
   toggleUserMenu() { this.userMenuOpen = !this.userMenuOpen; }
   closeMenu() { this.menuOpen = false; }
   logout() { this.userMenuOpen = false; this.auth.logout(); this.chatService.disconnect(); }
+
+  // ── Anuncios de página ──
+  visibleAnnouncements(position: string): any[] {
+    return this.pageAnnouncements.filter(ann => {
+      if (!ann.enabled) return false;
+      if (ann.position !== position) return false;
+      if (this.dismissedAnns.has(ann.id)) return false;
+      if (ann.page !== '*') {
+        const route = this.currentRoute || '/';
+        const pageMap: Record<string, string[]> = {
+          home:     ['/'],
+          products: ['/products'],
+          cajitas:  ['/cajitas'],
+          cart:     ['/cart'],
+          orders:   ['/orders'],
+          profile:  ['/profile']
+        };
+        const allowed = pageMap[ann.page] || [];
+        if (!allowed.some(p => route === p || route.startsWith(p + '/'))) return false;
+      }
+      return true;
+    });
+  }
+  dismissAnn(ann: any) { this.dismissedAnns.add(ann.id); }
 
   shareApp() {
     const shareData = {
