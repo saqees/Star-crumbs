@@ -41,7 +41,7 @@ type Tab = 'products'|'categories'|'orders'|'users'|'chat'|'carousel'|'cajitas'|
         <i [class]="t.icon"></i><span>{{t.label}}</span>
       </button>
       <p class="slbl">Personalización</p>
-      <button *ngFor="let t of tabs.slice(9)" class="tab-btn" [class.active]="activeTab()===t.key" (click)="setTab(t.key)">
+      <button *ngFor="let t of tabs.slice(8)" class="tab-btn" [class.active]="activeTab()===t.key" (click)="setTab(t.key)">
         <i [class]="t.icon"></i><span>{{t.label}}</span>
       </button>
     </aside>
@@ -228,234 +228,336 @@ type Tab = 'products'|'categories'|'orders'|'users'|'chat'|'carousel'|'cajitas'|
 
       <!-- ── WHY US ── -->
       <div *ngIf="activeTab()==='why_us'">
-        <div class="ch"><h2>Sección "¿Por qué nosotros?"</h2></div>
+        <div class="ch">
+          <h2>¿Por qué nosotros?</h2>
+          <button class="btn btn-primary btn-sm" (click)="addWhyItem()">
+            <i class="fas fa-plus"></i> Nueva tarjeta
+          </button>
+        </div>
 
-        <!-- Section global settings -->
-        <div class="settings-card card" style="margin-bottom:18px">
-          <p class="section-label">⚙️ Configuración general de la sección</p>
+        <!-- ── Sección global ── -->
+        <div class="settings-card card mb-md">
+          <p class="section-label">Configuración de la sección</p>
           <div class="row2">
-            <div class="form-group"><label>Título principal</label><input type="text" [(ngModel)]="whyUsData.title" class="form-control"></div>
-            <div class="form-group"><label>Subtítulo / eyebrow (opcional)</label><input type="text" [(ngModel)]="whyUsData.subtitle" class="form-control" placeholder="LA DIFERENCIA"></div>
+            <div class="form-group">
+              <label>Título</label>
+              <input type="text" [(ngModel)]="whyUsData.title" class="form-control" placeholder="¿Por qué Star Crumbs?">
+            </div>
+            <div class="form-group">
+              <label>Eyebrow (texto pequeño arriba)</label>
+              <input type="text" [(ngModel)]="whyUsData.subtitle" class="form-control" placeholder="Ej: LA DIFERENCIA">
+            </div>
           </div>
-          <div class="form-group"><label>Descripción de la sección (opcional)</label><input type="text" [(ngModel)]="whyUsData.description" class="form-control" placeholder="Texto debajo del título..."></div>
+          <div class="form-group">
+            <label>Descripción debajo del título</label>
+            <input type="text" [(ngModel)]="whyUsData.description" class="form-control" placeholder="Texto opcional...">
+          </div>
           <div class="row2">
             <div class="form-group">
               <label>Columnas</label>
               <select [(ngModel)]="whyUsData.columns" class="form-control">
                 <option value="2">2 columnas</option>
-                <option value="3">3 columnas</option>
+                <option value="3">3 columnas (recomendado)</option>
                 <option value="4">4 columnas</option>
               </select>
             </div>
             <div class="form-group">
-              <label>Alineación del título</label>
+              <label>Alineación</label>
               <select [(ngModel)]="whyUsData.title_align" class="form-control">
-                <option value="center">Centro</option>
+                <option value="center">Centrado</option>
                 <option value="left">Izquierda</option>
-                <option value="right">Derecha</option>
               </select>
             </div>
           </div>
           <div class="row2">
-            <div class="form-group"><label>Color de fondo de la sección</label><div class="color-row"><input type="color" [(ngModel)]="whyUsData.bg_color" class="color-picker"><input type="text" [(ngModel)]="whyUsData.bg_color" class="form-control color-hex"></div></div>
-            <div class="form-group"><label>Color del título</label><div class="color-row"><input type="color" [(ngModel)]="whyUsData.title_color" class="color-picker"><input type="text" [(ngModel)]="whyUsData.title_color" class="form-control color-hex"></div></div>
-            <div class="form-group"><label>Color acento (eyebrow)</label><div class="color-row"><input type="color" [(ngModel)]="whyUsData.accent_color" class="color-picker"><input type="text" [(ngModel)]="whyUsData.accent_color" class="form-control color-hex"></div></div>
+            <div class="form-group">
+              <label>Color de fondo</label>
+              <div class="color-row">
+                <input type="color" [(ngModel)]="whyUsData.bg_color" class="color-picker">
+                <input type="text"  [(ngModel)]="whyUsData.bg_color" class="form-control color-hex">
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Color del título</label>
+              <div class="color-row">
+                <input type="color" [(ngModel)]="whyUsData.title_color" class="color-picker">
+                <input type="text"  [(ngModel)]="whyUsData.title_color" class="form-control color-hex">
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Color acento</label>
+              <div class="color-row">
+                <input type="color" [(ngModel)]="whyUsData.accent_color" class="color-picker">
+                <input type="text"  [(ngModel)]="whyUsData.accent_color" class="form-control color-hex">
+              </div>
+            </div>
           </div>
           <div class="form-group">
             <label>Fuente del título</label>
             <select [(ngModel)]="whyUsData.title_font" class="form-control" [style.fontFamily]="whyUsData.title_font">
               <option value="">Por defecto</option>
-              <option *ngFor="let f of fontOptions" [value]="f.value">{{f.label}}</option>
+              <option *ngFor="let f of fontOptions" [value]="f.value" [style.fontFamily]="f.value">{{f.label}}</option>
             </select>
           </div>
         </div>
 
-        <!-- Items list -->
-        <div class="ch" style="margin-bottom:12px">
-          <h3 style="color:var(--mocca-bean);font-size:1rem">Tarjetas / Items</h3>
-          <button class="btn btn-primary btn-sm" (click)="addWhyItem()"><i class="fas fa-plus"></i> Agregar tarjeta</button>
+        <!-- ── Tarjetas ── -->
+        <div *ngIf="!whyUsData.items?.length" class="empty-sm">
+          <span>🍪</span><p>Sin tarjetas. Pulsa "Nueva tarjeta" para empezar.</p>
         </div>
 
-        <div *ngFor="let item of whyUsData.items; let i=index" class="why-item-editor card">
-          <!-- Item header with live mini-preview -->
-          <div class="why-editor-header">
-            <div class="why-mini-preview"
-                 [style.background]="item.bg_color||'#fff'"
-                 [style.borderRadius]="item.card_shape==='square'?'4px':item.card_shape==='pill'?'999px':item.card_shape==='flat'?'0':'12px'">
-              <span *ngIf="!item.image" style="font-size:1.4rem">{{item.icon||'🍪'}}</span>
-              <img *ngIf="item.image" [src]="item.image" style="width:32px;height:32px;object-fit:cover;border-radius:6px">
-              <small [style.color]="item.title_color||'var(--mocca-bean)'">{{item.title||'Sin título'}}</small>
+        <div *ngFor="let item of whyUsData.items; let i=index" class="why-editor-card card mb-sm">
+
+          <!-- Cabecera del ítem -->
+          <div class="why-editor-top">
+            <div class="why-editor-badge">
+              <span class="why-badge-icon">{{item.icon||'🍪'}}</span>
+              <strong class="why-badge-title">{{item.title||'Sin título'}}</strong>
             </div>
-            <button class="ab ab-d" (click)="removeWhyItem(i)"><i class="fas fa-trash"></i></button>
+            <div class="why-editor-actions">
+              <button class="ab ab-d" title="Eliminar" (click)="removeWhyItem(i)">
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
           </div>
 
-          <!-- Tabs: Estilo | Contenido | Apariencia -->
-          <div class="why-editor-tabs">
-            <button class="wet-btn" [class.wet-active]="(whyEditorTab[i]||0)===0" (click)="setWhyEditorTab(i,0)">📐 Estilo</button>
-            <button class="wet-btn" [class.wet-active]="(whyEditorTab[i]||0)===1" (click)="setWhyEditorTab(i,1)">✍️ Contenido</button>
-            <button class="wet-btn" [class.wet-active]="(whyEditorTab[i]||0)===2" (click)="setWhyEditorTab(i,2)">🎨 Apariencia</button>
-          </div>
+          <!-- Contenido del editor en dos columnas -->
+          <div class="why-editor-cols">
 
-          <!-- TAB 0: Estilo de tarjeta -->
-          <div *ngIf="(whyEditorTab[i]||0)===0" class="wet-panel">
-            <div class="form-group">
-              <label>Estilo de tarjeta</label>
-              <div class="card-style-grid">
-                <button class="cst-btn" [class.cst-active]="item.card_style==='default'||!item.card_style" (click)="item.card_style='default'">
-                  <div class="cst-prev" style="border-radius:12px;border:1px solid #ddd"><span>🍪</span><small>Título</small><small style="font-size:.5rem;color:#999">Texto</small></div>
-                  <span>Icono + texto</span>
-                </button>
-                <button class="cst-btn" [class.cst-active]="item.card_style==='full_image'" (click)="item.card_style='full_image'">
-                  <div class="cst-prev" style="border-radius:12px;background:var(--almond);overflow:hidden"><div style="height:30px;background:var(--warm-capuchino);opacity:.5"></div><small>Título</small></div>
-                  <span>Imagen arriba</span>
-                </button>
-                <button class="cst-btn" [class.cst-active]="item.card_style==='image_bg'" (click)="item.card_style='image_bg'">
-                  <div class="cst-prev" style="border-radius:12px;background:var(--mocca-bean);display:flex;align-items:flex-end;padding:4px"><small style="color:#fff">Título</small></div>
-                  <span>Foto de fondo</span>
-                </button>
-                <button class="cst-btn" [class.cst-active]="item.card_style==='text_only'" (click)="item.card_style='text_only'">
-                  <div class="cst-prev" style="border-radius:12px;padding:4px;text-align:center"><small style="font-weight:700">Solo texto</small></div>
-                  <span>Solo texto</span>
-                </button>
+            <!-- Columna izquierda: Media + Título + Contenido -->
+            <div class="why-editor-left">
+
+              <div class="why-editor-section-lbl">Ícono e imagen</div>
+              <div class="row2">
+                <div class="form-group">
+                  <label>Emoji / ícono</label>
+                  <input type="text" [(ngModel)]="item.icon" class="form-control emoji-in" placeholder="🍪">
+                </div>
+                <div class="form-group">
+                  <label>Imagen</label>
+                  <div class="fup-btn">
+                    <label class="fup-label">
+                      <i class="fas fa-image"></i> {{item.image ? 'Cambiar' : 'Subir'}}
+                      <input type="file" accept="image/*" class="fup-input" (change)="onWhyItemImage($event,i)">
+                    </label>
+                  </div>
+                  <div *ngIf="item.image" class="img-prev-row" style="margin-top:6px">
+                    <img [src]="item.image" style="width:40px;height:40px;object-fit:cover;border-radius:8px">
+                    <button class="ab ab-d" (click)="item.image=''"><i class="fas fa-times"></i></button>
+                  </div>
+                </div>
               </div>
-            </div>
-            <div class="form-group">
-              <label>Forma de la tarjeta</label>
-              <div class="card-shape-grid">
-                <button class="csh-btn" [class.csh-active]="item.card_shape==='rounded'||!item.card_shape" (click)="item.card_shape='rounded'"><div class="csh-prev" style="border-radius:16px"></div><span>Redondeada</span></button>
-                <button class="csh-btn" [class.csh-active]="item.card_shape==='square'" (click)="item.card_shape='square'"><div class="csh-prev" style="border-radius:4px"></div><span>Cuadrada</span></button>
-                <button class="csh-btn" [class.csh-active]="item.card_shape==='pill'" (click)="item.card_shape='pill'"><div class="csh-prev" style="border-radius:999px"></div><span>Pill</span></button>
-                <button class="csh-btn" [class.csh-active]="item.card_shape==='flat'" (click)="item.card_shape='flat'"><div class="csh-prev" style="border-radius:0;border-bottom:3px solid var(--warm-capuchino)"></div><span>Flat</span></button>
-                <button class="csh-btn" [class.csh-active]="item.card_shape==='outlined'" (click)="item.card_shape='outlined'"><div class="csh-prev" style="border-radius:16px;border:2px solid var(--almond);background:transparent"></div><span>Outlined</span></button>
-              </div>
-            </div>
-          </div>
 
-          <!-- TAB 1: Contenido -->
-          <div *ngIf="(whyEditorTab[i]||0)===1" class="wet-panel">
-            <div class="row2">
-              <div class="form-group"><label>Emoji / Ícono</label><input type="text" [(ngModel)]="item.icon" class="form-control emoji-in" placeholder="🍪"></div>
+              <div class="why-editor-section-lbl" style="margin-top:12px">Texto</div>
               <div class="form-group">
-                <label>Imagen</label>
-                <div class="fup-btn"><label class="fup-label"><i class="fas fa-image"></i> {{item.image?'Cambiar':'Subir imagen'}}<input type="file" accept="image/*" class="fup-input" (change)="onWhyItemImage($event,i)"></label></div>
-                <div *ngIf="item.image" class="img-prev-row"><img [src]="item.image" style="width:44px;height:44px;object-fit:cover;border-radius:8px"><button class="ab ab-d" style="height:auto;padding:3px 8px" (click)="item.image=''"><i class="fas fa-trash"></i></button></div>
+                <label>Título</label>
+                <input type="text" [(ngModel)]="item.title" class="form-control" placeholder="Ej: Ingredientes Premium">
               </div>
-            </div>
-            <div class="form-group"><label>Título de la tarjeta</label><input type="text" [(ngModel)]="item.title" class="form-control"></div>
 
-            <!-- Content type selector -->
-            <div class="form-group">
-              <label>Tipo de contenido</label>
-              <div class="content-type-grid">
-                <button class="ct-btn" [class.ct-active]="!item.content_type||item.content_type==='text'" (click)="item.content_type='text'"><i class="fas fa-align-left"></i><span>Texto</span></button>
-                <button class="ct-btn" [class.ct-active]="item.content_type==='list'" (click)="item.content_type='list';ensureList(item)"><i class="fas fa-list-ul"></i><span>Lista</span></button>
-                <button class="ct-btn" [class.ct-active]="item.content_type==='ingredients'" (click)="item.content_type='ingredients';ensureList(item)"><i class="fas fa-cookie-bite"></i><span>Ingredientes</span></button>
-                <button class="ct-btn" [class.ct-active]="item.content_type==='button'" (click)="item.content_type='button'"><i class="fas fa-hand-pointer"></i><span>Botón</span></button>
-                <button class="ct-btn" [class.ct-active]="item.content_type==='mixed'" (click)="item.content_type='mixed';ensureList(item)"><i class="fas fa-layer-group"></i><span>Mixto</span></button>
-              </div>
-            </div>
-
-            <!-- Text type -->
-            <div *ngIf="!item.content_type||item.content_type==='text'||item.content_type==='mixed'" class="form-group">
-              <label>Descripción</label>
-              <textarea [(ngModel)]="item.desc" class="form-control" rows="3" placeholder="Escribe una descripción..."></textarea>
-            </div>
-
-            <!-- List / Ingredients type -->
-            <div *ngIf="item.content_type==='list'||item.content_type==='ingredients'||item.content_type==='mixed'" class="form-group">
-              <label>Elementos de la lista</label>
-              <div *ngFor="let li of (item.list_items||[]); let j=index" class="list-item-row">
-                <input type="text" [(ngModel)]="item.list_items[j]" class="form-control" placeholder="Elemento {{j+1}}">
-                <button class="ab ab-d" (click)="removeListItem(item,j)"><i class="fas fa-times"></i></button>
-              </div>
-              <button class="btn btn-secondary btn-sm" style="margin-top:6px" (click)="addListItem(item)"><i class="fas fa-plus"></i> Agregar elemento</button>
-              <div *ngIf="item.content_type==='list'" class="form-group" style="margin-top:10px">
-                <label>Estilo de lista</label>
-                <select [(ngModel)]="item.list_style" class="form-control">
-                  <option value="bullets">• Puntos</option>
-                  <option value="numbered">1. Numerada</option>
+              <div class="form-group">
+                <label>Tipo de contenido</label>
+                <select [(ngModel)]="item.content_type" class="form-control"
+                        (ngModelChange)="item.content_type==='list'||item.content_type==='ingredients'||item.content_type==='mixed' ? ensureList(item) : null">
+                  <option value="text">📝 Texto (descripción)</option>
+                  <option value="list">📋 Lista con puntos / numerada</option>
+                  <option value="ingredients">🧂 Ingredientes (puntos de color)</option>
+                  <option value="button">🔘 Botón (enlace)</option>
+                  <option value="mixed">🔀 Mixto (texto + lista)</option>
                 </select>
               </div>
-            </div>
 
-            <!-- Button type -->
-            <div *ngIf="item.content_type==='button'" class="form-group">
-              <div class="row2">
-                <div class="form-group"><label>Texto del botón</label><input type="text" [(ngModel)]="item.button_text" class="form-control" placeholder="Ver más"></div>
-                <div class="form-group"><label>Ícono del botón</label><input type="text" [(ngModel)]="item.button_icon" class="form-control emoji-in" placeholder="→"></div>
+              <!-- Descripción (text / mixed) -->
+              <div *ngIf="!item.content_type||item.content_type==='text'||item.content_type==='mixed'" class="form-group">
+                <label>Descripción</label>
+                <textarea [(ngModel)]="item.desc" class="form-control" rows="3"
+                          placeholder="Escribe la descripción de esta tarjeta..."></textarea>
               </div>
-              <div class="form-group"><label>URL destino</label>
-                <select [(ngModel)]="item.button_url" class="form-control">
-                  <option value="/products">🍪 Productos</option>
-                  <option value="/cajitas">🎁 Cajitas</option>
-                  <option value="/">🏠 Inicio</option>
-                  <option value="/orders">📦 Mis Pedidos</option>
-                  <option *ngFor="let pg of sitePages()" [value]="'/page/'+pg.slug">📄 {{pg.title}}</option>
-                </select>
-              </div>
-              <div class="row2">
-                <div class="form-group"><label>Color del botón</label><div class="color-row"><input type="color" [(ngModel)]="item.button_color" class="color-picker"><input type="text" [(ngModel)]="item.button_color" class="form-control color-hex"></div></div>
-                <div class="form-group"><label>Color del texto del botón</label><div class="color-row"><input type="color" [(ngModel)]="item.button_text_color" class="color-picker"><input type="text" [(ngModel)]="item.button_text_color" class="form-control color-hex"></div></div>
-                <div class="form-group"><label>Border radius</label>
-                  <select [(ngModel)]="item.button_radius" class="form-control">
-                    <option value="var(--radius-full)">Redondeado</option>
-                    <option value="8px">Suave</option>
-                    <option value="0">Cuadrado</option>
+
+              <!-- Lista -->
+              <div *ngIf="item.content_type==='list'||item.content_type==='ingredients'||item.content_type==='mixed'" class="form-group">
+                <label>Elementos</label>
+                <div *ngFor="let li of (item.list_items||[]); let j=index" class="list-item-row">
+                  <input type="text" [(ngModel)]="item.list_items[j]" class="form-control"
+                         [placeholder]="'Elemento ' + (j+1)">
+                  <button class="ab ab-d" (click)="removeListItem(item,j)"><i class="fas fa-times"></i></button>
+                </div>
+                <button class="btn btn-secondary btn-sm" style="margin-top:6px" (click)="addListItem(item)">
+                  <i class="fas fa-plus"></i> Agregar
+                </button>
+                <div *ngIf="item.content_type==='list'" class="form-group" style="margin-top:10px">
+                  <select [(ngModel)]="item.list_style" class="form-control">
+                    <option value="bullets">• Puntos</option>
+                    <option value="numbered">1. Numerada</option>
                   </select>
                 </div>
               </div>
-            </div>
-          </div>
 
-          <!-- TAB 2: Apariencia -->
-          <div *ngIf="(whyEditorTab[i]||0)===2" class="wet-panel">
-            <div class="form-group"><label>Fuente</label>
-              <select [(ngModel)]="item.font" class="form-control" [style.fontFamily]="item.font">
-                <option value="">Por defecto</option>
-                <option *ngFor="let f of fontOptions" [value]="f.value">{{f.label}}</option>
-              </select>
-              <p class="font-preview" [style.fontFamily]="item.font">{{item.title||'Vista previa del texto'}}</p>
+              <!-- Botón -->
+              <div *ngIf="item.content_type==='button'" class="form-group">
+                <div class="row2">
+                  <div class="form-group">
+                    <label>Texto del botón</label>
+                    <input type="text" [(ngModel)]="item.button_text" class="form-control" placeholder="Ver más">
+                  </div>
+                  <div class="form-group">
+                    <label>Ícono del botón</label>
+                    <input type="text" [(ngModel)]="item.button_icon" class="form-control emoji-in" placeholder="→">
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label>Enlace destino</label>
+                  <select [(ngModel)]="item.button_url" class="form-control">
+                    <option value="/products">🍪 Productos</option>
+                    <option value="/cajitas">🎁 Cajitas</option>
+                    <option value="/">🏠 Inicio</option>
+                    <option value="/orders">📦 Pedidos</option>
+                    <option *ngFor="let pg of sitePages()" [value]="'/page/'+pg.slug">📄 {{pg.title}}</option>
+                  </select>
+                </div>
+                <div class="row2">
+                  <div class="form-group">
+                    <label>Color fondo botón</label>
+                    <div class="color-row">
+                      <input type="color" [(ngModel)]="item.button_color" class="color-picker">
+                      <input type="text"  [(ngModel)]="item.button_color" class="form-control color-hex">
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label>Color texto botón</label>
+                    <div class="color-row">
+                      <input type="color" [(ngModel)]="item.button_text_color" class="color-picker">
+                      <input type="text"  [(ngModel)]="item.button_text_color" class="form-control color-hex">
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
-            <div class="color-text-grid">
-              <div class="form-group"><label>Color de fondo de tarjeta</label><div class="color-row"><input type="color" [(ngModel)]="item.bg_color" class="color-picker"><input type="text" [(ngModel)]="item.bg_color" class="form-control color-hex"></div></div>
-              <div class="form-group"><label>Color del título</label><div class="color-row"><input type="color" [(ngModel)]="item.title_color" class="color-picker"><input type="text" [(ngModel)]="item.title_color" class="form-control color-hex"></div></div>
-              <div class="form-group"><label>Color del texto/descripción</label><div class="color-row"><input type="color" [(ngModel)]="item.desc_color" class="color-picker"><input type="text" [(ngModel)]="item.desc_color" class="form-control color-hex"></div></div>
-              <div class="form-group"><label>Color del punto / acento</label><div class="color-row"><input type="color" [(ngModel)]="item.accent_color" class="color-picker"><input type="text" [(ngModel)]="item.accent_color" class="form-control color-hex"></div></div>
-            </div>
-            <div class="row2">
-              <div class="form-group"><label>Alineación del texto</label>
-                <select [(ngModel)]="item.text_align" class="form-control">
-                  <option value="center">Centro</option>
-                  <option value="left">Izquierda</option>
-                  <option value="right">Derecha</option>
+
+            <!-- Columna derecha: Estilo + Apariencia -->
+            <div class="why-editor-right">
+
+              <div class="why-editor-section-lbl">Estilo de tarjeta</div>
+              <div class="why-style-opts">
+                <label class="why-style-opt" [class.wso-active]="!item.card_style||item.card_style==='default'">
+                  <input type="radio" [(ngModel)]="item.card_style" value="default" name="cs_{{i}}">
+                  <span class="wso-icon">🍪</span>
+                  <span>Ícono + texto</span>
+                </label>
+                <label class="why-style-opt" [class.wso-active]="item.card_style==='full_image'">
+                  <input type="radio" [(ngModel)]="item.card_style" value="full_image" name="cs_{{i}}">
+                  <span class="wso-icon">🖼️</span>
+                  <span>Imagen arriba</span>
+                </label>
+                <label class="why-style-opt" [class.wso-active]="item.card_style==='image_bg'">
+                  <input type="radio" [(ngModel)]="item.card_style" value="image_bg" name="cs_{{i}}">
+                  <span class="wso-icon">🌅</span>
+                  <span>Foto de fondo</span>
+                </label>
+                <label class="why-style-opt" [class.wso-active]="item.card_style==='text_only'">
+                  <input type="radio" [(ngModel)]="item.card_style" value="text_only" name="cs_{{i}}">
+                  <span class="wso-icon">📝</span>
+                  <span>Solo texto</span>
+                </label>
+              </div>
+
+              <div class="why-editor-section-lbl" style="margin-top:14px">Forma de la tarjeta</div>
+              <div class="why-shape-opts">
+                <label class="why-shape-opt" [class.wso-active]="!item.card_shape||item.card_shape==='rounded'">
+                  <input type="radio" [(ngModel)]="item.card_shape" value="rounded" name="sh_{{i}}">
+                  <div class="wshape-prev" style="border-radius:16px"></div>
+                  <span>Redondeada</span>
+                </label>
+                <label class="why-shape-opt" [class.wso-active]="item.card_shape==='square'">
+                  <input type="radio" [(ngModel)]="item.card_shape" value="square" name="sh_{{i}}">
+                  <div class="wshape-prev" style="border-radius:3px"></div>
+                  <span>Cuadrada</span>
+                </label>
+                <label class="why-shape-opt" [class.wso-active]="item.card_shape==='outlined'">
+                  <input type="radio" [(ngModel)]="item.card_shape" value="outlined" name="sh_{{i}}">
+                  <div class="wshape-prev" style="border-radius:14px;background:transparent;border:2px solid var(--almond)"></div>
+                  <span>Outlined</span>
+                </label>
+                <label class="why-shape-opt" [class.wso-active]="item.card_shape==='flat'">
+                  <input type="radio" [(ngModel)]="item.card_shape" value="flat" name="sh_{{i}}">
+                  <div class="wshape-prev" style="border-radius:0;border-bottom:3px solid var(--warm-capuchino)"></div>
+                  <span>Flat</span>
+                </label>
+              </div>
+
+              <div class="why-editor-section-lbl" style="margin-top:14px">Colores</div>
+              <div class="why-colors-grid">
+                <div class="form-group">
+                  <label>Fondo tarjeta</label>
+                  <div class="color-row">
+                    <input type="color" [(ngModel)]="item.bg_color" class="color-picker">
+                    <input type="text"  [(ngModel)]="item.bg_color" class="form-control color-hex">
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label>Título</label>
+                  <div class="color-row">
+                    <input type="color" [(ngModel)]="item.title_color" class="color-picker">
+                    <input type="text"  [(ngModel)]="item.title_color" class="form-control color-hex">
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label>Descripción</label>
+                  <div class="color-row">
+                    <input type="color" [(ngModel)]="item.desc_color" class="color-picker">
+                    <input type="text"  [(ngModel)]="item.desc_color" class="form-control color-hex">
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label>Acento / puntos</label>
+                  <div class="color-row">
+                    <input type="color" [(ngModel)]="item.accent_color" class="color-picker">
+                    <input type="text"  [(ngModel)]="item.accent_color" class="form-control color-hex">
+                  </div>
+                </div>
+              </div>
+
+              <div class="why-editor-section-lbl" style="margin-top:14px">Fuente y alineación</div>
+              <div class="form-group">
+                <select [(ngModel)]="item.font" class="form-control" [style.fontFamily]="item.font">
+                  <option value="">Por defecto</option>
+                  <option *ngFor="let f of fontOptions" [value]="f.value" [style.fontFamily]="f.value">{{f.label}}</option>
                 </select>
+                <p *ngIf="item.font" class="font-preview" [style.fontFamily]="item.font">
+                  {{item.title||'Vista previa'}}
+                </p>
               </div>
-              <div class="form-group"><label>Tamaño del título</label>
-                <select [(ngModel)]="item.title_size" class="form-control">
-                  <option value="">Normal (1.05rem)</option>
-                  <option value="0.9rem">Pequeño</option>
-                  <option value="1.3rem">Grande</option>
-                  <option value="1.6rem">Muy grande</option>
-                </select>
+              <div class="row2">
+                <div class="form-group">
+                  <label>Alineación</label>
+                  <select [(ngModel)]="item.text_align" class="form-control">
+                    <option value="center">Centro</option>
+                    <option value="left">Izquierda</option>
+                    <option value="right">Derecha</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label>Tamaño título</label>
+                  <select [(ngModel)]="item.title_size" class="form-control">
+                    <option value="">Normal</option>
+                    <option value="0.88rem">Pequeño</option>
+                    <option value="1.25rem">Grande</option>
+                    <option value="1.55rem">Muy grande</option>
+                  </select>
+                </div>
               </div>
-            </div>
-            <div class="form-group"><label>Forma del ícono/imagen</label>
-              <div class="card-shape-grid">
-                <button class="csh-btn" [class.csh-active]="item.icon_shape==='circle'" (click)="item.icon_shape='circle'"><div class="csh-prev" style="border-radius:50%"></div><span>Círculo</span></button>
-                <button class="csh-btn" [class.csh-active]="item.icon_shape==='square'" (click)="item.icon_shape='square'"><div class="csh-prev" style="border-radius:8px"></div><span>Cuadrado</span></button>
-                <button class="csh-btn" [class.csh-active]="!item.icon_shape" (click)="item.icon_shape=''"><div class="csh-prev"></div><span>Sin forma</span></button>
-              </div>
-            </div>
-            <div *ngIf="item.icon_shape" class="form-group"><label>Color del fondo del ícono</label><div class="color-row"><input type="color" [(ngModel)]="item.icon_bg" class="color-picker"><input type="text" [(ngModel)]="item.icon_bg" class="form-control color-hex"></div></div>
-          </div>
+
+            </div><!-- /why-editor-right -->
+          </div><!-- /why-editor-cols -->
         </div>
 
-        <div *ngIf="!whyUsData.items?.length" class="empty-sm"><span>🍪</span><p>Sin tarjetas. Agrega la primera.</p></div>
         <div class="btn-row mt-md">
-          <button class="btn btn-primary" (click)="saveWhyUs()"><i class="fas fa-save"></i> Guardar sección</button>
+          <button class="btn btn-primary" (click)="saveWhyUs()">
+            <i class="fas fa-save"></i> Guardar sección
+          </button>
         </div>
       </div>
 
+      <!-- ── NAVBAR ── -->
       <!-- ── NAVBAR ── -->
       <div *ngIf="activeTab()==='navbar'">
         <div class="ch"><h2>Editar Navbar</h2></div>
@@ -1818,6 +1920,58 @@ type Tab = 'products'|'categories'|'orders'|'users'|'chat'|'carousel'|'cajitas'|
       .mode-btn span { font-size:.65rem; }
       .gradient-builder { padding:10px; }
       .dir-btn { width:28px; height:28px; font-size:.85rem; }
+    }
+    /* ── Why-us card editor ── */
+    .why-editor-card { padding:0; margin-bottom:14px; overflow:hidden; border-radius:var(--radius-lg); }
+    .why-editor-top {
+      display:flex; align-items:center; justify-content:space-between;
+      padding:11px 16px; background:var(--almond-light);
+      border-bottom:1px solid var(--almond);
+    }
+    .why-editor-badge { display:flex; align-items:center; gap:10px; }
+    .why-badge-icon { font-size:1.5rem; line-height:1; }
+    .why-badge-title { font-size:.92rem; color:var(--mocca-bean); font-weight:700; }
+    .why-editor-cols { display:grid; grid-template-columns:1fr 1fr; gap:0; }
+    .why-editor-left  { padding:16px; border-right:1px solid var(--almond); }
+    .why-editor-right { padding:16px; }
+    .why-editor-section-lbl {
+      font-size:.66rem; font-weight:700; text-transform:uppercase;
+      letter-spacing:1.2px; color:var(--text-light);
+      margin-bottom:8px; display:block;
+    }
+    .why-style-opts { display:grid; grid-template-columns:1fr 1fr; gap:7px; margin-bottom:0; }
+    .why-style-opt {
+      display:flex; align-items:center; gap:8px;
+      padding:9px 11px; border:1.5px solid var(--almond);
+      border-radius:9px; cursor:pointer; background:#fff;
+      font-size:.76rem; font-weight:600; color:var(--text-mid);
+      transition:all .15s; user-select:none;
+    }
+    .why-style-opt input { display:none; }
+    .wso-icon { font-size:1.15rem; flex-shrink:0; }
+    .wso-active {
+      border-color:var(--warm-capuchino) !important;
+      background:linear-gradient(135deg,rgba(201,149,106,.1),rgba(181,98,46,.05));
+      color:var(--mocca-bean);
+    }
+    .why-shape-opts { display:flex; gap:7px; flex-wrap:wrap; }
+    .why-shape-opt {
+      display:flex; flex-direction:column; align-items:center; gap:5px;
+      padding:7px 10px; border:1.5px solid var(--almond);
+      border-radius:9px; cursor:pointer; background:#fff;
+      font-size:.66rem; font-weight:600; color:var(--text-mid);
+      transition:all .15s; user-select:none;
+    }
+    .why-shape-opt input { display:none; }
+    .wshape-prev { width:40px; height:26px; background:var(--almond); }
+    .why-colors-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+    .list-item-row { display:flex; gap:6px; align-items:center; margin-bottom:6px; }
+    .img-prev-row { display:flex; align-items:center; gap:8px; }
+    .mb-sm { margin-bottom:10px; }
+    .mb-md { margin-bottom:18px; }
+    @media(max-width:700px) {
+      .why-editor-cols { grid-template-columns:1fr; }
+      .why-editor-left { border-right:none; border-bottom:1px solid var(--almond); }
     }
     /* Color/Font editor */
     .color-text-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
