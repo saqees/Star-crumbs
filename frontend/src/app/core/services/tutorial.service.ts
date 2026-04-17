@@ -21,7 +21,7 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
   {
     id: 'welcome',
     title: '¡Bienvenido a Star Crumbs! 🍪',
-    description: 'En este tutorial aprenderás a: iniciar sesión o registrarte, completar tu perfil, explorar nuestros productos y realizar tu primer pedido. ¡Es fácil y rápido!',
+    description: 'En este tutorial aprenderás a iniciar sesión, registrarte, explorar productos y hacer tu primer pedido. ¡La pantalla se desbloqueará en cada paso para que puedas interactuar libremente!',
     icon: '🎓',
     tooltipPos: 'center',
     nextLabel: '¡Empezar!',
@@ -31,7 +31,7 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
     id: 'login',
     step: 1,
     title: 'Paso 1: Inicia sesión',
-    description: 'Presiona este botón para ingresar a tu cuenta. Solo necesitas tu correo electrónico y contraseña.',
+    description: '👆 Presiona el botón <strong>"Ingresar"</strong> resaltado. Ingresa tu correo y contraseña para acceder a tu cuenta.',
     icon: '🔑',
     route: '/auth/login',
     selector: 'button[type="submit"]',
@@ -42,20 +42,21 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
   {
     id: 'register',
     step: 2,
-    title: 'Paso 2: Regístrate',
-    description: 'Si aún no tienes cuenta, puedes crear una aquí. Completa tus datos básicos para unirte a la familia Star Crumbs.',
+    title: 'Paso 2: Crea tu cuenta',
+    description: '👆 ¿No tienes cuenta? Presiona el botón <strong>"Registrarse"</strong> resaltado y completa tus datos para unirte a Star Crumbs.',
     icon: '✨',
     route: '/auth/register',
-    selector: '.auth-header',
-    tooltipPos: 'bottom',
+    selector: 'button[type="submit"]',
+    tooltipPos: 'top',
     nextLabel: 'Siguiente →',
-    padding: 20,
+    padding: 16,
+    scrollIntoView: true,
   },
   {
     id: 'location',
     step: 2,
-    title: 'Especifica tu ubicación 📍',
-    description: 'Así sabremos dónde llevarte tu paquete. Selecciona tu barrio o ingresa tu dirección específica con el link de Google Maps.',
+    title: 'Tu ubicación 📍',
+    description: '👆 En la sección <strong>"Ubicación"</strong> resaltada, selecciona tu barrio o pega el link de Google Maps con tu dirección. Así sabremos dónde entregarte.',
     icon: '📍',
     route: '/auth/register',
     selector: '.location-section',
@@ -65,23 +66,10 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
     padding: 12,
   },
   {
-    id: 'register_submit',
-    step: 2,
-    title: '¡Crear cuenta!',
-    description: 'Una vez completados todos tus datos, presiona este botón para finalizar tu registro. ¡Bienvenido a Star Crumbs!',
-    icon: '🎉',
-    route: '/auth/register',
-    selector: 'button[type="submit"]',
-    tooltipPos: 'top',
-    nextLabel: 'Siguiente →',
-    scrollIntoView: true,
-    padding: 16,
-  },
-  {
     id: 'profile',
     step: 3,
     title: 'Paso 3: Tu perfil',
-    description: 'Al iniciar sesión, selecciona tu perfil desde el menú. Aquí puedes completar tu información personal, ver tus pedidos y dejar reseñas.',
+    description: '👆 Toca las <strong>pestañas de perfil</strong> resaltadas para ver tus pedidos, reseñas e información personal. Aquí puedes editar todos tus datos.',
     icon: '👤',
     route: '/profile',
     selector: '.profile-tabs',
@@ -93,8 +81,8 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
   {
     id: 'products',
     step: 4,
-    title: 'Paso 4: Explora los productos',
-    description: 'Aquí encontrarás todos nuestros productos. Toca cualquier tarjeta para ver los detalles, precio y opciones de pedido.',
+    title: 'Paso 4: Explora productos',
+    description: '👆 Toca cualquier <strong>tarjeta de producto</strong> resaltada para ver sus detalles, precio y opciones de pedido. ¡Hay muchas opciones deliciosas!',
     icon: '🛍️',
     route: '/products',
     selector: '.products-grid',
@@ -106,18 +94,18 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
     id: 'order',
     step: 5,
     title: 'Paso 5: Haz tu pedido',
-    description: 'Tienes dos formas de hacer tu pedido:\n\n🛒 Pedido en línea: Agrega al carrito y haz tu pedido directamente desde la página.\n\n💬 WhatsApp: Usa el botón de WhatsApp para contactarnos directamente.',
+    description: 'Tienes dos formas de hacer tu pedido:\n\n🛒 <strong>En línea:</strong> agrega productos al carrito y completa tu pedido desde la página.\n\n💬 <strong>WhatsApp:</strong> usa el botón de WhatsApp para contactarnos directamente.',
     icon: '🛒',
     route: '/products',
     tooltipPos: 'center',
-    nextLabel: '¡Finalizar tutorial!',
+    nextLabel: '¡Listo!',
     isFinal: false,
   },
   {
     id: 'complete',
     step: 6,
     title: '¡Tutorial completado! 🎉',
-    description: '¡Felicitaciones! Ya conoces todo lo que necesitas para disfrutar de Star Crumbs. Si tienes dudas, puedes repetir el tutorial desde el footer. ¡Que disfrutes tus galletas! 🍪',
+    description: '¡Felicitaciones! Ya sabes todo lo que necesitas para disfrutar Star Crumbs. Puedes repetir el tutorial desde el footer cuando quieras. ¡Que disfrutes tus galletas! 🍪',
     icon: '🏆',
     tooltipPos: 'center',
     nextLabel: '¡Cerrar!',
@@ -127,15 +115,15 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
 
 @Injectable({ providedIn: 'root' })
 export class TutorialService {
-  isActive = signal(false);
+  isActive    = signal(false);
   currentStepIndex = signal(0);
   showWelcome = signal(false);
 
-  private readonly STORAGE_KEY = 'starcrumbs_tutorial_dismissed';
+  private readonly STORAGE_KEY  = 'starcrumbs_tutorial_dismissed';
   private readonly COMPLETED_KEY = 'starcrumbs_tutorial_completed';
 
-  get steps() { return TUTORIAL_STEPS; }
-  get currentStep() { return TUTORIAL_STEPS[this.currentStepIndex()]; }
+  get steps()      { return TUTORIAL_STEPS; }
+  get currentStep(){ return TUTORIAL_STEPS[this.currentStepIndex()]; }
   get totalSteps() { return TUTORIAL_STEPS.length; }
 
   checkFirstVisit() {
