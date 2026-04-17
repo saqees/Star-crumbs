@@ -13,11 +13,13 @@ import { PwaPromptComponent } from './features/pwa/pwa-prompt.component';
 import { NotificationsPanelComponent } from './features/notifications/notifications-panel.component';
 import { environment } from '../environments/environment';
 import { PushService } from './core/services/push.service';
+import { TutorialComponent } from './features/tutorial/tutorial.component';
+import { TutorialService } from './core/services/tutorial.service';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, CommonModule, ChatComponent, NotificationsPanelComponent, PwaPromptComponent],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, CommonModule, ChatComponent, NotificationsPanelComponent, PwaPromptComponent, TutorialComponent],
   template: `
     <!-- ═══════════ NAVBAR ═══════════ -->
     <nav class="navbar" [class.scrolled]="scrolled" [attr.data-pos]="navPos()">
@@ -220,6 +222,10 @@ import { PushService } from './core/services/push.service';
           <button class="footer-action-btn" (click)="shareApp()" title="Compartir la página">
             <i class="fas fa-share-alt"></i>
             <span>Compartir</span>
+          </button>
+          <button class="footer-action-btn tutorial-footer-btn" (click)="tutorialService.restartTutorial()" title="Ver tutorial de la página">
+            <i class="fas fa-graduation-cap"></i>
+            <span>Haz el tutorial</span>
           </button>
           <button *ngIf="pushService.isSubscribed()" class="footer-action-btn notif-btn active"
                   (click)="toggleNotifSubscription()" title="Desactivar notificaciones">
@@ -440,6 +446,9 @@ import { PushService } from './core/services/push.service';
         {{t.message}}
       </div>
     </div>
+
+    <!-- Tutorial -->
+    <app-tutorial></app-tutorial>
   `,
   styles: [`
     /* ═══ NAVBAR ════════════════════════════════════════ */
@@ -597,6 +606,8 @@ import { PushService } from './core/services/push.service';
     .footer-action-btn:hover { background:var(--warm-capuchino); border-color:var(--warm-capuchino); color:#fff; }
     .install-btn { background:linear-gradient(135deg,var(--warm-capuchino),var(--caramel-roast)); border-color:transparent; color:#fff; }
     .notif-btn.active { background:rgba(201,149,106,0.3); }
+    .tutorial-footer-btn { background: linear-gradient(135deg, #2a1a5e, #1a1a3e); border-color: rgba(255,255,255,0.2); color: #c9b8ff; }
+    .tutorial-footer-btn:hover { background: linear-gradient(135deg, #3d2a7e, #2a1a5e) !important; border-color: #c9b8ff !important; color: #fff !important; }
     .footer-social { grid-column:1/-1; display:flex; gap:12px; justify-content:center; margin-top:16px; }
     .social-icon { width:38px; height:38px; border-radius:50%; background:rgba(255,255,255,0.1); display:flex; align-items:center; justify-content:center; color:var(--almond); font-size:1rem; transition:all var(--transition); text-decoration:none; }
     .social-icon:hover { background:var(--warm-capuchino); color:#fff; transform:translateY(-3px); }
@@ -858,6 +869,7 @@ export class AppComponent implements OnInit, OnDestroy {
     public chatService: ChatService,
     public toastService: ToastService,
     public pushService: PushService,
+    public tutorialService: TutorialService,
     private router: Router,
     private http: HttpClient
   ) {
