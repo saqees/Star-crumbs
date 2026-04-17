@@ -18,94 +18,120 @@ export interface TutorialStep {
 }
 
 export const TUTORIAL_STEPS: TutorialStep[] = [
+  // ── 0: Bienvenida ──────────────────────────────────────────────────────────
   {
     id: 'welcome',
     title: '¡Bienvenido a Star Crumbs! 🍪',
-    description: 'En este tutorial aprenderás a iniciar sesión, registrarte, explorar productos y hacer tu primer pedido. ¡La pantalla se desbloqueará en cada paso para que puedas interactuar libremente!',
+    description: 'Te mostraré cómo usar la página paso a paso. En cada paso verás resaltado exactamente qué botón debes presionar. ¡La pantalla estará desbloqueada para que puedas interactuar!',
     icon: '🎓',
     tooltipPos: 'center',
     nextLabel: '¡Empezar!',
     isWelcome: true,
   },
+
+  // ── 1: Botón "Ingresar" del navbar ─────────────────────────────────────────
   {
-    id: 'login',
+    id: 'navbar_ingresar',
     step: 1,
-    title: 'Paso 1: Inicia sesión',
-    description: '👆 Presiona el botón <strong>"Ingresar"</strong> resaltado. Ingresa tu correo y contraseña para acceder a tu cuenta.',
+    title: 'Paso 1: Accede a tu cuenta',
+    description: '👆 Presiona el botón <strong>"Ingresar"</strong> resaltado en la barra de navegación para ir a la pantalla de inicio de sesión.',
     icon: '🔑',
+    selector: 'a.btn-primary.btn-sm',
+    tooltipPos: 'bottom',
+    nextLabel: 'Siguiente →',
+    padding: 14,
+  },
+
+  // ── 2: Botón "Ingresar" del formulario de login ────────────────────────────
+  {
+    id: 'login_submit',
+    step: 2,
+    title: 'Paso 2: Iniciar sesión',
+    description: '👆 Si ya tienes cuenta, ingresa tu correo y contraseña y presiona el botón <strong>"Ingresar"</strong> resaltado para acceder.',
+    icon: '🍪',
     route: '/auth/login',
-    selector: 'button[type="submit"]',
+    selector: 'button[type="submit"].btn-primary',
     tooltipPos: 'top',
     nextLabel: 'Siguiente →',
-    padding: 16,
+    padding: 14,
   },
+
+  // ── 3: Link "Regístrate aquí" en el login ──────────────────────────────────
   {
-    id: 'register',
-    step: 2,
-    title: 'Paso 2: Crea tu cuenta',
-    description: '👆 ¿No tienes cuenta? Presiona el botón <strong>"Registrarse"</strong> resaltado y completa tus datos para unirte a Star Crumbs.',
+    id: 'register_link',
+    step: 3,
+    title: 'Paso 3: Crear cuenta nueva',
+    description: '👆 ¿No tienes cuenta? Presiona el enlace <strong>"Regístrate aquí"</strong> resaltado para ir al formulario de registro.',
     icon: '✨',
-    route: '/auth/register',
-    selector: 'button[type="submit"]',
+    route: '/auth/login',
+    selector: 'a[routerLink="/auth/register"]',
     tooltipPos: 'top',
     nextLabel: 'Siguiente →',
-    padding: 16,
-    scrollIntoView: true,
+    padding: 10,
   },
+
+  // ── 4: Botón "Crear cuenta" del formulario de registro ─────────────────────
   {
-    id: 'location',
-    step: 2,
-    title: 'Tu ubicación 📍',
-    description: '👆 En la sección <strong>"Ubicación"</strong> resaltada, selecciona tu barrio o pega el link de Google Maps con tu dirección. Así sabremos dónde entregarte.',
-    icon: '📍',
+    id: 'register_submit',
+    step: 4,
+    title: 'Paso 4: Completa tu registro',
+    description: '👆 Llena tus datos (nombre, correo, teléfono y ubicación) y presiona el botón <strong>"Crear cuenta"</strong> resaltado para registrarte.',
+    icon: '🎉',
     route: '/auth/register',
-    selector: '.location-section',
+    selector: 'button[type="submit"].btn-primary',
     tooltipPos: 'top',
     nextLabel: 'Siguiente →',
     scrollIntoView: true,
-    padding: 12,
+    padding: 14,
   },
+
+  // ── 5: Pestañas de perfil ──────────────────────────────────────────────────
   {
     id: 'profile',
-    step: 3,
-    title: 'Paso 3: Tu perfil',
-    description: '👆 Toca las <strong>pestañas de perfil</strong> resaltadas para ver tus pedidos, reseñas e información personal. Aquí puedes editar todos tus datos.',
+    step: 5,
+    title: 'Paso 5: Tu perfil',
+    description: '👆 Toca las <strong>pestañas de perfil</strong> resaltadas para ver tus pedidos, reseñas e información personal. Puedes editarla cuando quieras.',
     icon: '👤',
     route: '/profile',
     selector: '.profile-tabs',
     tooltipPos: 'bottom',
     nextLabel: 'Siguiente →',
     requiresAuth: true,
-    padding: 16,
+    padding: 14,
   },
+
+  // ── 6: Grilla de productos ─────────────────────────────────────────────────
   {
     id: 'products',
-    step: 4,
-    title: 'Paso 4: Explora productos',
-    description: '👆 Toca cualquier <strong>tarjeta de producto</strong> resaltada para ver sus detalles, precio y opciones de pedido. ¡Hay muchas opciones deliciosas!',
+    step: 6,
+    title: 'Paso 6: Explora productos',
+    description: '👆 Toca cualquier <strong>tarjeta de producto</strong> resaltada para ver detalles, precio y opciones de pedido. ¡Hay muchas opciones deliciosas!',
     icon: '🛍️',
     route: '/products',
     selector: '.products-grid',
     tooltipPos: 'top',
     nextLabel: 'Siguiente →',
-    padding: 12,
+    padding: 10,
   },
+
+  // ── 7: Resumen de cómo pedir ───────────────────────────────────────────────
   {
     id: 'order',
-    step: 5,
-    title: 'Paso 5: Haz tu pedido',
-    description: 'Tienes dos formas de hacer tu pedido:\n\n🛒 <strong>En línea:</strong> agrega productos al carrito y completa tu pedido desde la página.\n\n💬 <strong>WhatsApp:</strong> usa el botón de WhatsApp para contactarnos directamente.',
+    step: 7,
+    title: 'Paso 7: Haz tu pedido',
+    description: 'Tienes dos formas de pedir:\n\n🛒 <strong>En línea:</strong> agrega productos al carrito y finaliza tu pedido desde la página.\n\n💬 <strong>WhatsApp:</strong> usa el botón flotante para contactarnos directamente.',
     icon: '🛒',
     route: '/products',
     tooltipPos: 'center',
-    nextLabel: '¡Listo!',
+    nextLabel: '¡Finalizar!',
     isFinal: false,
   },
+
+  // ── 8: Completado ──────────────────────────────────────────────────────────
   {
     id: 'complete',
-    step: 6,
     title: '¡Tutorial completado! 🎉',
-    description: '¡Felicitaciones! Ya sabes todo lo que necesitas para disfrutar Star Crumbs. Puedes repetir el tutorial desde el footer cuando quieras. ¡Que disfrutes tus galletas! 🍪',
+    description: '¡Felicitaciones! Ya conoces todo lo que necesitas para disfrutar Star Crumbs. Puedes repetir el tutorial desde el pie de página cuando quieras. ¡Que disfrutes tus galletas! 🍪',
     icon: '🏆',
     tooltipPos: 'center',
     nextLabel: '¡Cerrar!',
@@ -115,16 +141,16 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
 
 @Injectable({ providedIn: 'root' })
 export class TutorialService {
-  isActive    = signal(false);
+  isActive         = signal(false);
   currentStepIndex = signal(0);
-  showWelcome = signal(false);
+  showWelcome      = signal(false);
 
-  private readonly STORAGE_KEY  = 'starcrumbs_tutorial_dismissed';
+  private readonly STORAGE_KEY   = 'starcrumbs_tutorial_dismissed';
   private readonly COMPLETED_KEY = 'starcrumbs_tutorial_completed';
 
-  get steps()      { return TUTORIAL_STEPS; }
-  get currentStep(){ return TUTORIAL_STEPS[this.currentStepIndex()]; }
-  get totalSteps() { return TUTORIAL_STEPS.length; }
+  get steps()       { return TUTORIAL_STEPS; }
+  get currentStep() { return TUTORIAL_STEPS[this.currentStepIndex()]; }
+  get totalSteps()  { return TUTORIAL_STEPS.length; }
 
   checkFirstVisit() {
     const dismissed = localStorage.getItem(this.STORAGE_KEY);
