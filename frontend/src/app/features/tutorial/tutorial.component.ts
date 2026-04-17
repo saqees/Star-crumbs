@@ -1,5 +1,5 @@
 import {
-  Component, OnInit, OnDestroy, signal, effect,
+  Component, OnInit, OnDestroy, signal, effect, computed,
   ChangeDetectorRef
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -338,7 +338,10 @@ export class TutorialComponent implements OnInit, OnDestroy {
   tooltipLeft   = signal<string>('50%');
   tooltipTransform = signal<string>('translate(-50%,-50%)');
   navigating    = signal(false);
-  currentStep   = signal<TutorialStep | null>(null);
+  // Computed: siempre sincronizado con el estado del servicio, nunca null por race condition
+  currentStep   = computed<TutorialStep | null>(
+    () => this.tutorial.steps[this.tutorial.currentStepIndex()] ?? null
+  );
 
   private resizeObs?: ResizeObserver;
   private positionTimer?: any;
@@ -380,7 +383,6 @@ export class TutorialComponent implements OnInit, OnDestroy {
   private async applyStep(idx: number) {
     const step = this.tutorial.steps[idx];
     if (!step) return;
-    this.currentStep.set(step);
     this.navigating.set(true);
     this.clearSpotlight();
 
@@ -491,6 +493,7 @@ export class TutorialComponent implements OnInit, OnDestroy {
   }
 
   async next() {
+    if (this.navigating()) return;
     const step = this.currentStep();
     if (!step) return;
 
