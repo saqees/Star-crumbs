@@ -1,6 +1,5 @@
 import {
-  Component, OnInit, OnDestroy, signal, effect, computed,
-  ChangeDetectorRef, NgZone
+  Component, OnInit, OnDestroy, signal, effect, computed, NgZone
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
@@ -10,16 +9,9 @@ import { AuthService } from '../../core/services/auth.service';
 interface SpotlightRect {
   top: number; left: number; width: number; height: number;
 }
-
 interface ArrowPos {
   top: number; left: number;
   dir: 'up' | 'down' | 'left' | 'right';
-}
-
-interface SavedStyle {
-  el: HTMLElement;
-  position: string;
-  zIndex: string;
 }
 
 @Component({
@@ -34,8 +26,7 @@ interface SavedStyle {
         <h2 class="tut-welcome-title">¡Bienvenido a Star Crumbs!</h2>
         <p class="tut-welcome-sub">¿Quieres hacer el tutorial?</p>
         <p class="tut-welcome-desc">
-          Aprende a usar la página en pocos pasos: cómo iniciar sesión,
-          registrarte, explorar productos y hacer tu pedido. ¡Solo toma un minuto!
+          Aprende a usar la página en pocos pasos. ¡Solo toma un minuto!
         </p>
         <div class="tut-welcome-btns">
           <button class="tut-btn tut-btn-no" (click)="onNo()">
@@ -48,67 +39,37 @@ interface SavedStyle {
       </div>
     </div>
 
-    <!-- ═══ OVERLAY ACTIVO ═══ -->
+    <!-- ═══ TUTORIAL ACTIVO ═══ -->
     <ng-container *ngIf="tutorial.isActive()">
 
-      <!-- ── Spotlight mode: 4 dark panels + elevated element ── -->
-      <ng-container *ngIf="spotlightRect() && currentStep()?.tooltipPos !== 'center'; else fullDark">
+      <!-- ── Overlay oscuro SOLO en pasos centrados (sin interacción) ── -->
+      <div class="tut-dark-full-overlay"
+           *ngIf="currentStep()?.tooltipPos === 'center' || !currentStep()?.selector">
+      </div>
 
-        <!-- Panel superior (respeta navbars y headers fijos) -->
-        <div class="tut-panel"
-             [style.top.px]="topPanelTop()"
-             [style.left.px]="0" [style.right.px]="0"
-             [style.height.px]="topPanelH()">
-        </div>
-        <!-- Panel inferior -->
-        <div class="tut-panel"
-             [style.top.px]="spotlightRect()!.top + spotlightRect()!.height"
-             [style.left.px]="0" [style.right.px]="0" [style.bottom.px]="0">
-        </div>
-        <!-- Panel izquierdo -->
-        <div class="tut-panel"
-             [style.top.px]="spotlightRect()!.top"
-             [style.left.px]="0"
-             [style.width.px]="spotlightRect()!.left"
-             [style.height.px]="spotlightRect()!.height">
-        </div>
-        <!-- Panel derecho -->
-        <div class="tut-panel"
-             [style.top.px]="spotlightRect()!.top"
-             [style.left.px]="spotlightRect()!.left + spotlightRect()!.width"
-             [style.right.px]="0"
-             [style.height.px]="spotlightRect()!.height">
-        </div>
+      <!-- ── Glow ring: resalta el elemento sin bloquear la pantalla ── -->
+      <div class="tut-glow-ring"
+           *ngIf="spotlightRect() && currentStep()?.tooltipPos !== 'center'"
+           [style.top.px]="spotlightRect()!.top"
+           [style.left.px]="spotlightRect()!.left"
+           [style.width.px]="spotlightRect()!.width"
+           [style.height.px]="spotlightRect()!.height">
+      </div>
 
-        <!-- Glow ring (solo visual, no intercepta clicks) -->
-        <div class="tut-glow-ring"
-             [style.top.px]="spotlightRect()!.top"
-             [style.left.px]="spotlightRect()!.left"
-             [style.width.px]="spotlightRect()!.width"
-             [style.height.px]="spotlightRect()!.height">
-        </div>
+      <!-- ── Flecha animada apuntando al elemento ── -->
+      <div *ngIf="arrowPos() && currentStep()?.tooltipPos !== 'center'"
+           class="tut-arrow-pointer"
+           [class.tut-arrow-anim-down]="arrowPos()!.dir === 'down'"
+           [class.tut-arrow-anim-up]="arrowPos()!.dir === 'up'"
+           [class.tut-arrow-anim-left]="arrowPos()!.dir === 'left'"
+           [class.tut-arrow-anim-right]="arrowPos()!.dir === 'right'"
+           [style.top.px]="arrowPos()!.top"
+           [style.left.px]="arrowPos()!.left">
+        <div class="tut-arr-shaft"></div>
+        <div class="tut-arr-head"></div>
+      </div>
 
-        <!-- ── FLECHA ANIMADA apuntando al elemento ── -->
-        <div *ngIf="arrowPos()"
-             class="tut-arrow-pointer"
-             [class.tut-arrow-down]="arrowPos()!.dir === 'down'"
-             [class.tut-arrow-up]="arrowPos()!.dir === 'up'"
-             [class.tut-arrow-left]="arrowPos()!.dir === 'left'"
-             [class.tut-arrow-right]="arrowPos()!.dir === 'right'"
-             [style.top.px]="arrowPos()!.top"
-             [style.left.px]="arrowPos()!.left">
-          <div class="tut-arrow-shaft"></div>
-          <div class="tut-arrow-head"></div>
-        </div>
-
-      </ng-container>
-
-      <!-- Oscuro completo para pasos center -->
-      <ng-template #fullDark>
-        <div class="tut-dark-full-overlay"></div>
-      </ng-template>
-
-      <!-- ── Tooltip card ── -->
+      <!-- ── Tooltip flotante ── -->
       <div class="tut-tooltip"
            [class.tut-tooltip-center]="currentStep()?.tooltipPos === 'center'"
            [style.top]="tooltipTop()"
@@ -126,12 +87,6 @@ interface SavedStyle {
 
         <p class="tut-tt-desc" [innerHTML]="formatDesc(currentStep()?.description)"></p>
 
-        <!-- Indicador de "debes hacer clic" cuando hay selector -->
-        <div class="tut-action-required" *ngIf="requiresClick()">
-          <i class="fas fa-hand-pointer"></i>
-          <span>Haz clic en el botón resaltado para continuar</span>
-        </div>
-
         <!-- Progress dots -->
         <div class="tut-progress">
           <span *ngFor="let s of tutorial.steps; let i = index"
@@ -141,14 +96,11 @@ interface SavedStyle {
           </span>
         </div>
 
-        <!-- Botones: solo Saltar + Siguiente cuando NO hay elemento que presionar -->
         <div class="tut-tt-btns">
           <button class="tut-btn tut-btn-skip" (click)="skip()">
             <i class="fas fa-times"></i> Saltar
           </button>
-          <!-- Siguiente solo aparece en pasos sin selector (center) -->
-          <button *ngIf="!requiresClick()"
-                  class="tut-btn tut-btn-next"
+          <button class="tut-btn tut-btn-next"
                   (click)="next()"
                   [disabled]="navigating()">
             <i class="fas fa-spinner fa-spin" *ngIf="navigating()"></i>
@@ -161,22 +113,19 @@ interface SavedStyle {
     </ng-container>
   `,
   styles: [`
-    /* ══════════════════════════════════════
-       WELCOME MODAL
-    ══════════════════════════════════════ */
+    /* ══════════ WELCOME ══════════ */
     .tut-backdrop {
       position: fixed; inset: 0; z-index: 19000;
       background: rgba(0,0,0,0.65);
-      display: flex; align-items: center; justify-content: center;
-      padding: 20px;
+      display: flex; align-items: center; justify-content: center; padding: 20px;
       animation: tutFadeIn 0.3s ease;
     }
     @keyframes tutFadeIn { from { opacity: 0; } to { opacity: 1; } }
 
     .tut-welcome-card {
-      background: #fff; border-radius: 20px;
-      padding: 36px 32px 28px; max-width: 420px; width: 100%;
-      text-align: center; box-shadow: 0 24px 80px rgba(0,0,0,0.3);
+      background: #fff; border-radius: 20px; padding: 36px 32px 28px;
+      max-width: 420px; width: 100%; text-align: center;
+      box-shadow: 0 24px 80px rgba(0,0,0,0.3);
       animation: tutSlideUp 0.4s cubic-bezier(0.34,1.56,0.64,1);
     }
     @keyframes tutSlideUp {
@@ -189,13 +138,11 @@ interface SavedStyle {
     }
     @keyframes tutBounce { from { transform: translateY(0); } to { transform: translateY(-8px); } }
     .tut-welcome-title { font-size: 1.5rem; font-weight: 800; color: var(--mocca-bean,#3D1F0D); margin: 0 0 4px; }
-    .tut-welcome-sub   { font-size: 1.1rem; font-weight: 600; color: var(--warm-capuchino,#8B5E3C); margin: 0 0 14px; }
+    .tut-welcome-sub   { font-size: 1.1rem; font-weight: 600; color: var(--warm-capuchino,#8B5E3C); margin: 0 0 12px; }
     .tut-welcome-desc  { font-size: 0.88rem; color: #666; line-height: 1.6; margin-bottom: 24px; }
     .tut-welcome-btns  { display: flex; gap: 10px; justify-content: center; }
 
-    /* ══════════════════════════════════════
-       BUTTONS
-    ══════════════════════════════════════ */
+    /* ══════════ BUTTONS ══════════ */
     .tut-btn {
       display: inline-flex; align-items: center; gap: 7px;
       padding: 10px 20px; border-radius: 50px; border: none;
@@ -203,13 +150,13 @@ interface SavedStyle {
       transition: all 0.2s ease; white-space: nowrap;
     }
     .tut-btn:disabled { opacity: 0.6; cursor: not-allowed; }
-    .tut-btn-no { background: #f3f4f6; color: #666; }
+    .tut-btn-no  { background: #f3f4f6; color: #666; }
     .tut-btn-no:hover { background: #e5e7eb; color: #333; }
     .tut-btn-yes {
       background: linear-gradient(135deg, var(--warm-capuchino,#8B5E3C), var(--caramel-roast,#5C3A1E));
       color: #fff; box-shadow: 0 4px 16px rgba(139,94,60,0.4);
     }
-    .tut-btn-yes:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(139,94,60,0.5); }
+    .tut-btn-yes:hover { transform: translateY(-1px); }
     .tut-btn-skip {
       background: rgba(255,255,255,0.12); color: rgba(255,255,255,0.8);
       border: 1.5px solid rgba(255,255,255,0.25);
@@ -217,187 +164,101 @@ interface SavedStyle {
     .tut-btn-skip:hover { background: rgba(255,255,255,0.2); color: #fff; }
     .tut-btn-next {
       background: linear-gradient(135deg, var(--warm-capuchino,#8B5E3C), var(--caramel-roast,#5C3A1E));
-      color: #fff; flex: 1; box-shadow: 0 3px 12px rgba(0,0,0,0.3);
-      justify-content: center;
+      color: #fff; flex: 1; justify-content: center;
+      box-shadow: 0 3px 12px rgba(0,0,0,0.3);
     }
-    .tut-btn-next:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 5px 16px rgba(0,0,0,0.4); }
+    .tut-btn-next:hover:not(:disabled) { transform: translateY(-1px); }
 
-    /* ══════════════════════════════════════
-       4 PANELES — fondo oscuro real
-    ══════════════════════════════════════ */
-    .tut-panel {
-      position: fixed; z-index: 10000;
-      background: rgba(0,0,0,0.82);
-      pointer-events: all;
-      transition: all 0.4s cubic-bezier(0.4,0,0.2,1);
-    }
+    /* ══════════ OVERLAY OSCURO (solo pasos center) ══════════ */
     .tut-dark-full-overlay {
-      position: fixed; inset: 0; z-index: 10000;
+      position: fixed; inset: 0; z-index: 11000;
       background: rgba(0,0,0,0.82);
       pointer-events: all;
     }
 
-    /* ══════════════════════════════════════
-       GLOW RING (solo visual)
-    ══════════════════════════════════════ */
+    /* ══════════ GLOW RING (indicador visual, no bloquea) ══════════ */
     .tut-glow-ring {
       position: fixed; z-index: 13001;
       border-radius: 10px;
       pointer-events: none;
-      border: 2.5px solid rgba(255,255,255,0.8);
+      border: 2.5px solid rgba(255,255,255,0.85);
       box-shadow:
-        0 0 22px 5px rgba(255,255,255,0.28),
-        0 0 55px 10px rgba(255,220,100,0.18);
+        0 0 0 4px rgba(255,220,80,0.25),
+        0 0 24px 6px rgba(255,255,255,0.3),
+        0 0 60px 12px rgba(255,220,100,0.2);
       animation: glowPulse 1.8s ease-in-out infinite;
     }
     @keyframes glowPulse {
       0%,100% {
-        border-color: rgba(255,255,255,0.6);
-        box-shadow: 0 0 16px 3px rgba(255,255,255,0.2), 0 0 40px 6px rgba(255,220,100,0.1);
+        border-color: rgba(255,255,255,0.65);
+        box-shadow: 0 0 0 3px rgba(255,220,80,0.15), 0 0 18px 4px rgba(255,255,255,0.2), 0 0 45px 8px rgba(255,220,100,0.12);
       }
       50% {
         border-color: rgba(255,255,255,1);
-        box-shadow: 0 0 30px 8px rgba(255,255,255,0.42), 0 0 75px 16px rgba(255,220,100,0.28);
+        box-shadow: 0 0 0 5px rgba(255,220,80,0.35), 0 0 32px 8px rgba(255,255,255,0.45), 0 0 80px 18px rgba(255,220,100,0.3);
       }
     }
 
-    /* ══════════════════════════════════════
-       FLECHA ANIMADA
-    ══════════════════════════════════════ */
+    /* ══════════ FLECHA ANIMADA ══════════ */
     .tut-arrow-pointer {
-      position: fixed;
-      z-index: 13002;
+      position: fixed; z-index: 13002;
       pointer-events: none;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      filter: drop-shadow(0 2px 8px rgba(0,0,0,0.6));
+      display: flex; align-items: center; justify-content: center;
+      filter: drop-shadow(0 2px 6px rgba(0,0,0,0.5));
     }
+    .tut-arr-shaft { background: linear-gradient(135deg,#FFE066,#FFB800); border-radius: 4px; }
+    .tut-arr-head  { width: 0; height: 0; flex-shrink: 0; }
 
-    /* La flecha es un conjunto: shaft (cuerpo) + head (punta) */
-    .tut-arrow-shaft {
-      background: linear-gradient(135deg, #FFE066, #FFB800);
-      border-radius: 4px;
-    }
-    .tut-arrow-head {
-      width: 0; height: 0;
-      flex-shrink: 0;
-    }
+    /* Down */
+    .tut-arrow-anim-down { flex-direction: column; animation: arrowBounceDown 0.75s ease-in-out infinite alternate; }
+    .tut-arrow-anim-down .tut-arr-shaft { width: 8px; height: 38px; }
+    .tut-arrow-anim-down .tut-arr-head  { border-left: 13px solid transparent; border-right: 13px solid transparent; border-top: 20px solid #FFB800; }
+    @keyframes arrowBounceDown { from { transform: translateY(-5px); } to { transform: translateY(4px); } }
 
-    /* ─── DOWN ─── */
-    .tut-arrow-down {
-      flex-direction: column;
-      animation: bounceDown 0.8s ease-in-out infinite alternate;
-    }
-    .tut-arrow-down .tut-arrow-shaft  { width: 8px; height: 40px; }
-    .tut-arrow-down .tut-arrow-head   {
-      border-left: 14px solid transparent;
-      border-right: 14px solid transparent;
-      border-top: 22px solid #FFB800;
-    }
-    @keyframes bounceDown {
-      from { transform: translateY(-6px); opacity: 0.85; }
-      to   { transform: translateY(4px);  opacity: 1; }
-    }
+    /* Up */
+    .tut-arrow-anim-up { flex-direction: column-reverse; animation: arrowBounceUp 0.75s ease-in-out infinite alternate; }
+    .tut-arrow-anim-up .tut-arr-shaft { width: 8px; height: 38px; }
+    .tut-arrow-anim-up .tut-arr-head  { border-left: 13px solid transparent; border-right: 13px solid transparent; border-bottom: 20px solid #FFB800; }
+    @keyframes arrowBounceUp { from { transform: translateY(5px); } to { transform: translateY(-4px); } }
 
-    /* ─── UP ─── */
-    .tut-arrow-up {
-      flex-direction: column-reverse;
-      animation: bounceUp 0.8s ease-in-out infinite alternate;
-    }
-    .tut-arrow-up .tut-arrow-shaft { width: 8px; height: 40px; }
-    .tut-arrow-up .tut-arrow-head  {
-      border-left: 14px solid transparent;
-      border-right: 14px solid transparent;
-      border-bottom: 22px solid #FFB800;
-    }
-    @keyframes bounceUp {
-      from { transform: translateY(6px);  opacity: 0.85; }
-      to   { transform: translateY(-4px); opacity: 1; }
-    }
+    /* Left */
+    .tut-arrow-anim-left { flex-direction: row-reverse; animation: arrowBounceLeft 0.75s ease-in-out infinite alternate; }
+    .tut-arrow-anim-left .tut-arr-shaft { height: 8px; width: 38px; }
+    .tut-arrow-anim-left .tut-arr-head  { border-top: 13px solid transparent; border-bottom: 13px solid transparent; border-right: 20px solid #FFB800; }
+    @keyframes arrowBounceLeft { from { transform: translateX(5px); } to { transform: translateX(-4px); } }
 
-    /* ─── LEFT ─── */
-    .tut-arrow-left {
-      flex-direction: row-reverse;
-      animation: bounceLeft 0.8s ease-in-out infinite alternate;
-    }
-    .tut-arrow-left .tut-arrow-shaft { height: 8px; width: 40px; }
-    .tut-arrow-left .tut-arrow-head  {
-      border-top: 14px solid transparent;
-      border-bottom: 14px solid transparent;
-      border-right: 22px solid #FFB800;
-    }
-    @keyframes bounceLeft {
-      from { transform: translateX(6px);  opacity: 0.85; }
-      to   { transform: translateX(-4px); opacity: 1; }
-    }
+    /* Right */
+    .tut-arrow-anim-right { flex-direction: row; animation: arrowBounceRight 0.75s ease-in-out infinite alternate; }
+    .tut-arrow-anim-right .tut-arr-shaft { height: 8px; width: 38px; }
+    .tut-arrow-anim-right .tut-arr-head  { border-top: 13px solid transparent; border-bottom: 13px solid transparent; border-left: 20px solid #FFB800; }
+    @keyframes arrowBounceRight { from { transform: translateX(-5px); } to { transform: translateX(4px); } }
 
-    /* ─── RIGHT ─── */
-    .tut-arrow-right {
-      flex-direction: row;
-      animation: bounceRight 0.8s ease-in-out infinite alternate;
-    }
-    .tut-arrow-right .tut-arrow-shaft { height: 8px; width: 40px; }
-    .tut-arrow-right .tut-arrow-head  {
-      border-top: 14px solid transparent;
-      border-bottom: 14px solid transparent;
-      border-left: 22px solid #FFB800;
-    }
-    @keyframes bounceRight {
-      from { transform: translateX(-6px); opacity: 0.85; }
-      to   { transform: translateX(4px);  opacity: 1; }
-    }
-
-    /* ══════════════════════════════════════
-       TOOLTIP CARD
-    ══════════════════════════════════════ */
+    /* ══════════ TOOLTIP ══════════ */
     .tut-tooltip {
       position: fixed; z-index: 13003;
-      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+      background: linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%);
       border-radius: 16px; padding: 20px 22px 16px;
       max-width: 320px; min-width: 260px; color: #fff;
       box-shadow: 0 20px 60px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.1);
-      animation: tutTooltipIn 0.35s cubic-bezier(0.34,1.56,0.64,1);
+      animation: tooltipIn 0.35s cubic-bezier(0.34,1.56,0.64,1);
       pointer-events: all;
     }
-    @keyframes tutTooltipIn {
-      from { opacity: 0; transform: scale(0.85); }
-      to   { opacity: 1; transform: scale(1); }
-    }
-    .tut-tooltip-center { max-width: 360px !important; }
+    @keyframes tooltipIn { from { opacity: 0; transform: scale(0.85); } to { opacity: 1; transform: scale(1); } }
+    .tut-tooltip-center { max-width: 380px !important; }
 
     .tut-step-badge {
-      display: inline-block;
-      font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em;
+      display: inline-block; font-size: 0.7rem; font-weight: 800;
+      text-transform: uppercase; letter-spacing: 0.08em;
       color: rgba(255,220,80,0.9); background: rgba(255,220,80,0.12);
-      border: 1px solid rgba(255,220,80,0.25);
+      border: 1px solid rgba(255,220,80,0.3);
       border-radius: 20px; padding: 2px 10px; margin-bottom: 10px;
     }
     .tut-tt-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
     .tut-tt-icon  { font-size: 1.6rem; line-height: 1; flex-shrink: 0; }
     .tut-tt-title { font-size: 1.02rem; font-weight: 700; color: #fff; margin: 0; line-height: 1.3; }
-    .tut-tt-desc  { font-size: 0.84rem; color: rgba(255,255,255,0.82); line-height: 1.6; margin: 0 0 12px; }
+    .tut-tt-desc  { font-size: 0.84rem; color: rgba(255,255,255,0.85); line-height: 1.65; margin: 0 0 14px; }
+    .tut-tt-desc strong { color: #FFE066; }
 
-    /* Indicador de acción requerida */
-    .tut-action-required {
-      display: flex; align-items: center; gap: 8px;
-      background: rgba(255,220,70,0.15);
-      border: 1px solid rgba(255,220,70,0.35);
-      border-radius: 10px;
-      padding: 8px 12px;
-      margin-bottom: 12px;
-      font-size: 0.8rem;
-      color: rgba(255,220,70,0.95);
-      font-weight: 600;
-      animation: actionPulse 2s ease-in-out infinite;
-    }
-    @keyframes actionPulse {
-      0%,100% { border-color: rgba(255,220,70,0.25); background: rgba(255,220,70,0.1); }
-      50%      { border-color: rgba(255,220,70,0.55); background: rgba(255,220,70,0.2); }
-    }
-    .tut-action-required i { font-size: 1rem; flex-shrink: 0; }
-
-    /* Progress dots */
     .tut-progress { display: flex; gap: 5px; justify-content: center; margin-bottom: 14px; }
     .tut-dot       { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,0.25); transition: all 0.2s; }
     .tut-dot-active { background: #fff; transform: scale(1.3); }
@@ -409,7 +270,7 @@ interface SavedStyle {
       .tut-welcome-card { padding: 28px 20px 22px; }
       .tut-welcome-btns { flex-direction: column; }
       .tut-tooltip { max-width: calc(100vw - 32px); }
-      .tut-tooltip-center { width: calc(100vw - 48px) !important; }
+      .tut-tooltip-center { width: calc(100vw - 40px) !important; }
     }
   `]
 })
@@ -421,30 +282,16 @@ export class TutorialComponent implements OnInit, OnDestroy {
   navigating       = signal(false);
   arrowPos         = signal<ArrowPos | null>(null);
 
-  /** Top y height del panel superior, calculados respetando navbars fijos */
-  topPanelTop = signal(0);
-  topPanelH   = signal(0);
-
-  /** El paso actual siempre sincronizado con el servicio */
   currentStep = computed<TutorialStep | null>(
     () => this.tutorial.steps[this.tutorial.currentStepIndex()] ?? null
   );
 
-  /** True cuando el usuario debe hacer clic en el elemento real de la página */
-  requiresClick = computed(() => {
-    const s = this.currentStep();
-    return !!s?.selector && s.tooltipPos !== 'center';
-  });
-
-  // Elementos elevados y sus estilos originales
-  private elevatedEls: SavedStyle[] = [];
   private targetClickHandler?: () => void;
 
   constructor(
     public tutorial: TutorialService,
     private router: Router,
     private auth: AuthService,
-    private cdr: ChangeDetectorRef,
     private zone: NgZone,
   ) {
     effect(() => {
@@ -453,7 +300,7 @@ export class TutorialComponent implements OnInit, OnDestroy {
       if (active) {
         this.applyStep(idx);
       } else {
-        this.cleanup();
+        this.clearStep();
       }
     });
   }
@@ -465,7 +312,7 @@ export class TutorialComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     window.removeEventListener('resize', this.onResize);
-    this.cleanup();
+    this.clearStep();
   }
 
   private onResize = () => {
@@ -476,17 +323,12 @@ export class TutorialComponent implements OnInit, OnDestroy {
     const step = this.tutorial.steps[idx];
     if (!step) return;
 
-    // Limpiar paso anterior
-    this.cleanup();
-
+    this.clearStep();
     this.navigating.set(true);
 
-    // Navegar si es necesario
     if (step.route) {
-      const currentUrl = this.router.url.split('?')[0];
-      if (currentUrl !== step.route) {
-        await this.router.navigate([step.route]);
-      }
+      const cur = this.router.url.split('?')[0];
+      if (cur !== step.route) await this.router.navigate([step.route]);
     }
 
     await this.wait(step.route ? 650 : 250);
@@ -510,39 +352,26 @@ export class TutorialComponent implements OnInit, OnDestroy {
 
     const el = document.querySelector(step.selector) as HTMLElement;
     if (!el) {
+      // Elemento no encontrado: tooltip centrado, sin glow
       this.spotlightRect.set(null);
       this.arrowPos.set(null);
-      this.topPanelTop.set(0);
-      this.topPanelH.set(0);
       this.tooltipTop.set('50%');
       this.tooltipLeft.set('50%');
       this.tooltipTransform.set('translate(-50%,-50%)');
       return;
     }
 
-    if (step.scrollIntoView) {
-      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
+    if (step.scrollIntoView) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
 
-    // ── Elevar el elemento y sus ancestros sobre el overlay ──
-    this.elevateElement(el);
-
-    // ── Registrar click listener que avanza el tutorial ──
+    // Registrar click listener: avanza el tutorial cuando el usuario presiona el elemento
     this.registerClickListener(el);
 
     const pad  = step.padding ?? 12;
     const rect = el.getBoundingClientRect();
 
-    // ── Detectar si el elemento está en un navbar/header fijo ──
-    // Si es así, el panel superior no tapa esa zona para que sea clickeable
-    const fixedBottom = this.getFixedContainerBottom(el);
-    const sTop = rect.top - pad;
-    this.topPanelTop.set(fixedBottom);
-    this.topPanelH.set(Math.max(0, sTop - fixedBottom));
-
     this.spotlightRect.set({
-      top:    sTop,
-      left:   rect.left  - pad,
+      top:    rect.top    - pad,
+      left:   rect.left   - pad,
       width:  rect.width  + pad * 2,
       height: rect.height + pad * 2,
     });
@@ -550,137 +379,60 @@ export class TutorialComponent implements OnInit, OnDestroy {
     this.placeTooltipAndArrow(rect, step.tooltipPos ?? 'bottom', pad);
   }
 
-  /**
-   * Si el elemento vive dentro de un contenedor position:fixed o sticky
-   * (típicamente un navbar), devuelve el bottom de ese contenedor en px.
-   * Esa franja queda libre — el panel superior empieza debajo de ella.
-   */
-  private getFixedContainerBottom(el: HTMLElement): number {
-    let node = el.parentElement;
-    while (node && node !== document.body) {
-      const pos = window.getComputedStyle(node).position;
-      if (pos === 'fixed' || pos === 'sticky') {
-        return node.getBoundingClientRect().bottom;
-      }
-      node = node.parentElement;
-    }
-    return 0;
-  }
-
-  /**
-   * Eleva el elemento y TODOS sus ancestros al mismo plano del tutorial (z-index 13000).
-   * Esto garantiza que ningún stacking context intermedio lo tape bajo los paneles oscuros.
-   * Solo aplica mientras el tutorial está activo; cleanup() lo revierte todo.
-   */
-  private elevateElement(el: HTMLElement) {
-    const TARGET_Z = 13000;
-    const saved: SavedStyle[] = [];
-
-    let node: HTMLElement | null = el;
-    while (node && node !== document.body) {
-      const cs       = window.getComputedStyle(node);
-      const origPos  = node.style.position;
-      const origZ    = node.style.zIndex;
-
-      saved.push({ el: node, position: origPos, zIndex: origZ });
-
-      // Necesita position != static para que z-index tenga efecto
-      if (cs.position === 'static') {
-        node.style.position = 'relative';
-      }
-      node.style.zIndex = String(TARGET_Z);
-
-      node = node.parentElement;
-    }
-
-    this.elevatedEls = saved;
-  }
-
-  /**
-   * Escucha el clic en el elemento objetivo y avanza el tutorial.
-   */
   private registerClickListener(el: HTMLElement) {
     const handler = () => {
-      this.zone.run(() => {
-        // Pequeña pausa para que el click propio del botón procese primero
-        setTimeout(() => this.tutorial.nextStep(), 100);
-      });
+      this.zone.run(() => setTimeout(() => this.tutorial.nextStep(), 150));
     };
     el.addEventListener('click', handler, { once: true });
     this.targetClickHandler = () => el.removeEventListener('click', handler);
   }
 
-  /**
-   * Restaura todos los estilos elevados y elimina listeners.
-   */
-  private cleanup() {
-    for (const saved of this.elevatedEls) {
-      saved.el.style.position = saved.position;
-      saved.el.style.zIndex   = saved.zIndex;
-    }
-    this.elevatedEls = [];
-
+  private clearStep() {
     if (this.targetClickHandler) {
       this.targetClickHandler();
       this.targetClickHandler = undefined;
     }
-
     this.spotlightRect.set(null);
     this.arrowPos.set(null);
-    this.topPanelTop.set(0);
-    this.topPanelH.set(0);
   }
 
   private placeTooltipAndArrow(rect: DOMRect, pos: string, pad: number) {
     const TT_W = 320, TT_H = 260;
     const vw = window.innerWidth, vh = window.innerHeight;
     const gap = 20;
-    const ARROW_SIZE = 70; // tamaño total de la flecha
+    const ARR = 66; // tamaño total flecha
 
     let top = '50%', left = '50%', transform = 'translate(-50%,-50%)';
-    let arrowTop = 0, arrowLeft = 0, arrowDir: ArrowPos['dir'] = 'down';
-
-    const elCenterX = rect.left + rect.width  / 2;
-    const elCenterY = rect.top  + rect.height / 2;
+    let aTop = 0, aLeft = 0, aDir: ArrowPos['dir'] = 'down';
+    const cx = rect.left + rect.width  / 2;
+    const cy = rect.top  + rect.height / 2;
 
     if (pos === 'top') {
-      // Tooltip encima → flecha apunta hacia abajo (↓) justo encima del elemento
-      const tTop  = Math.max(12, rect.top - pad - TT_H - gap);
-      const tLeft = Math.min(vw - TT_W - 12, Math.max(12, elCenterX - TT_W / 2));
+      const tTop  = Math.max(8, rect.top - pad - TT_H - gap);
+      const tLeft = Math.min(vw - TT_W - 8, Math.max(8, cx - TT_W / 2));
       top = `${tTop}px`; left = `${tLeft}px`; transform = 'none';
-      arrowDir  = 'down';
-      arrowTop  = rect.top - pad - ARROW_SIZE - 4;
-      arrowLeft = elCenterX - 15;
+      aDir = 'down'; aTop = rect.top - pad - ARR - 6; aLeft = cx - 14;
     } else if (pos === 'bottom') {
-      // Tooltip debajo → flecha apunta hacia arriba (↑)
-      const tTop  = Math.min(vh - TT_H - 12, rect.bottom + pad + gap);
-      const tLeft = Math.min(vw - TT_W - 12, Math.max(12, elCenterX - TT_W / 2));
+      const tTop  = Math.min(vh - TT_H - 8, rect.bottom + pad + gap);
+      const tLeft = Math.min(vw - TT_W - 8, Math.max(8, cx - TT_W / 2));
       top = `${tTop}px`; left = `${tLeft}px`; transform = 'none';
-      arrowDir  = 'up';
-      arrowTop  = rect.bottom + pad + 4;
-      arrowLeft = elCenterX - 15;
+      aDir = 'up'; aTop = rect.bottom + pad + 6; aLeft = cx - 14;
     } else if (pos === 'left') {
-      // Tooltip a la izquierda → flecha apunta a la derecha (→)... desde la izquierda
-      const tTop  = Math.min(vh - TT_H - 12, Math.max(12, elCenterY - TT_H / 2));
-      const tLeft = Math.max(12, rect.left - pad - TT_W - gap);
+      const tTop  = Math.min(vh - TT_H - 8, Math.max(8, cy - TT_H / 2));
+      const tLeft = Math.max(8, rect.left - pad - TT_W - gap);
       top = `${tTop}px`; left = `${tLeft}px`; transform = 'none';
-      arrowDir  = 'right';
-      arrowTop  = elCenterY - 15;
-      arrowLeft = rect.left - pad - ARROW_SIZE - 4;
+      aDir = 'right'; aTop = cy - 14; aLeft = rect.left - pad - ARR - 6;
     } else if (pos === 'right') {
-      // Tooltip a la derecha → flecha apunta a la izquierda (←)
-      const tTop  = Math.min(vh - TT_H - 12, Math.max(12, elCenterY - TT_H / 2));
-      const tLeft = Math.min(vw - TT_W - 12, rect.right + pad + gap);
+      const tTop  = Math.min(vh - TT_H - 8, Math.max(8, cy - TT_H / 2));
+      const tLeft = Math.min(vw - TT_W - 8, rect.right + pad + gap);
       top = `${tTop}px`; left = `${tLeft}px`; transform = 'none';
-      arrowDir  = 'left';
-      arrowTop  = elCenterY - 15;
-      arrowLeft = rect.right + pad + 4;
+      aDir = 'left'; aTop = cy - 14; aLeft = rect.right + pad + 6;
     }
 
     this.tooltipTop.set(top);
     this.tooltipLeft.set(left);
     this.tooltipTransform.set(transform);
-    this.arrowPos.set({ top: arrowTop, left: arrowLeft, dir: arrowDir });
+    this.arrowPos.set({ top: aTop, left: aLeft, dir: aDir });
   }
 
   private wait(ms: number) { return new Promise(r => setTimeout(r, ms)); }
@@ -692,7 +444,6 @@ export class TutorialComponent implements OnInit, OnDestroy {
 
   onYes() { this.tutorial.startTutorial(); }
   onNo()  { this.tutorial.dismissForever(); }
-  onBackdropClick(e: MouseEvent) {}
 
   async next() {
     if (this.navigating()) return;
