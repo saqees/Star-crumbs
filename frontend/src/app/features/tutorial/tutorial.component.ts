@@ -225,13 +225,13 @@ interface SavedStyle {
        4 PANELES — fondo oscuro real
     ══════════════════════════════════════ */
     .tut-panel {
-      position: fixed; z-index: 11000;
+      position: fixed; z-index: 10000;
       background: rgba(0,0,0,0.82);
       pointer-events: all;
       transition: all 0.4s cubic-bezier(0.4,0,0.2,1);
     }
     .tut-dark-full-overlay {
-      position: fixed; inset: 0; z-index: 11000;
+      position: fixed; inset: 0; z-index: 10000;
       background: rgba(0,0,0,0.82);
       pointer-events: all;
     }
@@ -240,7 +240,7 @@ interface SavedStyle {
        GLOW RING (solo visual)
     ══════════════════════════════════════ */
     .tut-glow-ring {
-      position: fixed; z-index: 11002;
+      position: fixed; z-index: 13001;
       border-radius: 10px;
       pointer-events: none;
       border: 2.5px solid rgba(255,255,255,0.8);
@@ -265,7 +265,7 @@ interface SavedStyle {
     ══════════════════════════════════════ */
     .tut-arrow-pointer {
       position: fixed;
-      z-index: 11004;
+      z-index: 13002;
       pointer-events: none;
       display: flex;
       align-items: center;
@@ -351,7 +351,7 @@ interface SavedStyle {
        TOOLTIP CARD
     ══════════════════════════════════════ */
     .tut-tooltip {
-      position: fixed; z-index: 12000;
+      position: fixed; z-index: 13003;
       background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
       border-radius: 16px; padding: 20px 22px 16px;
       max-width: 320px; min-width: 260px; color: #fff;
@@ -537,26 +537,24 @@ export class TutorialComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Eleva el elemento y cada ancestro posicionado por encima del overlay (z-index 11000).
-   * Guarda los estilos originales para restaurarlos en cleanup().
+   * Eleva el elemento y TODOS sus ancestros al mismo plano del tutorial (z-index 13000).
+   * Esto garantiza que ningún stacking context intermedio lo tape bajo los paneles oscuros.
+   * Solo aplica mientras el tutorial está activo; cleanup() lo revierte todo.
    */
   private elevateElement(el: HTMLElement) {
-    const TARGET_Z = 11500;
+    const TARGET_Z = 13000;
     const saved: SavedStyle[] = [];
 
     let node: HTMLElement | null = el;
     while (node && node !== document.body) {
-      const computed = window.getComputedStyle(node);
-      const position = computed.position;
-      const zIndex   = node.style.zIndex;
+      const cs       = window.getComputedStyle(node);
       const origPos  = node.style.position;
+      const origZ    = node.style.zIndex;
 
-      // Necesita stacking context para que z-index funcione
-      const needsPosition = position === 'static';
+      saved.push({ el: node, position: origPos, zIndex: origZ });
 
-      saved.push({ el: node, position: origPos, zIndex });
-
-      if (needsPosition) {
+      // Necesita position != static para que z-index tenga efecto
+      if (cs.position === 'static') {
         node.style.position = 'relative';
       }
       node.style.zIndex = String(TARGET_Z);
