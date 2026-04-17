@@ -54,10 +54,11 @@ interface SavedStyle {
       <!-- ── Spotlight mode: 4 dark panels + elevated element ── -->
       <ng-container *ngIf="spotlightRect() && currentStep()?.tooltipPos !== 'center'; else fullDark">
 
-        <!-- Panel superior -->
+        <!-- Panel superior (respeta navbars y headers fijos) -->
         <div class="tut-panel"
-             [style.top.px]="0" [style.left.px]="0" [style.right.px]="0"
-             [style.height.px]="spotlightRect()!.top">
+             [style.top.px]="topPanelTop()"
+             [style.left.px]="0" [style.right.px]="0"
+             [style.height.px]="topPanelH()">
         </div>
         <!-- Panel inferior -->
         <div class="tut-panel"
@@ -420,6 +421,10 @@ export class TutorialComponent implements OnInit, OnDestroy {
   navigating       = signal(false);
   arrowPos         = signal<ArrowPos | null>(null);
 
+  /** Top y height del panel superior, calculados respetando navbars fijos */
+  topPanelTop = signal(0);
+  topPanelH   = signal(0);
+
   /** El paso actual siempre sincronizado con el servicio */
   currentStep = computed<TutorialStep | null>(
     () => this.tutorial.steps[this.tutorial.currentStepIndex()] ?? null
@@ -507,6 +512,8 @@ export class TutorialComponent implements OnInit, OnDestroy {
     if (!el) {
       this.spotlightRect.set(null);
       this.arrowPos.set(null);
+      this.topPanelTop.set(0);
+      this.topPanelH.set(0);
       this.tooltipTop.set('50%');
       this.tooltipLeft.set('50%');
       this.tooltipTransform.set('translate(-50%,-50%)');
@@ -526,14 +533,38 @@ export class TutorialComponent implements OnInit, OnDestroy {
     const pad  = step.padding ?? 12;
     const rect = el.getBoundingClientRect();
 
+    // ── Detectar si el elemento está en un navbar/header fijo ──
+    // Si es así, el panel superior no tapa esa zona para que sea clickeable
+    const fixedBottom = this.getFixedContainerBottom(el);
+    const sTop = rect.top - pad;
+    this.topPanelTop.set(fixedBottom);
+    this.topPanelH.set(Math.max(0, sTop - fixedBottom));
+
     this.spotlightRect.set({
-      top:    rect.top    - pad,
-      left:   rect.left   - pad,
+      top:    sTop,
+      left:   rect.left  - pad,
       width:  rect.width  + pad * 2,
       height: rect.height + pad * 2,
     });
 
     this.placeTooltipAndArrow(rect, step.tooltipPos ?? 'bottom', pad);
+  }
+
+  /**
+   * Si el elemento vive dentro de un contenedor position:fixed o sticky
+   * (típicamente un navbar), devuelve el bottom de ese contenedor en px.
+   * Esa franja queda libre — el panel superior empieza debajo de ella.
+   */
+  private getFixedContainerBottom(el: HTMLElement): number {
+    let node = el.parentElement;
+    while (node && node !== document.body) {
+      const pos = window.getComputedStyle(node).position;
+      if (pos === 'fixed' || pos === 'sticky') {
+        return node.getBoundingClientRect().bottom;
+      }
+      node = node.parentElement;
+    }
+    return 0;
   }
 
   /**
@@ -596,6 +627,8 @@ export class TutorialComponent implements OnInit, OnDestroy {
 
     this.spotlightRect.set(null);
     this.arrowPos.set(null);
+    this.topPanelTop.set(0);
+    this.topPanelH.set(0);
   }
 
   private placeTooltipAndArrow(rect: DOMRect, pos: string, pad: number) {
